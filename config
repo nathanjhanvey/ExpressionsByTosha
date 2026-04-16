@@ -1,0 +1,16 @@
+# GitHub Pages configuration for Expressions by Tosha Hanvey
+
+# Site identity
+title: Expressions by Tosha Hanvey
+description: Original healing art by survivor Tosha Hanvey. Affirmation prints, apparel, mugs and gifts designed to bring calm, hope and encouragement.
+url: "https://nathanjhanvey.github.io"
+baseurl: "/ExpressionsByTosha"
+
+# Tell GitHub Pages this is a plain HTML site — no Jekyll processing needed
+# This prevents GitHub from trying to interpret the HTML as a Jekyll template
+exclude:
+  - README.md
+  - LICENSE
+
+# Encoding
+encoding: utf-8
