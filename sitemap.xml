@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Main page -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Her Story section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#story</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Shop section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#shop</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Testimonials section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#testimonials</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Custom Orders / Commission section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#commission</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Newsletter section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#newsletter</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Connect section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#connect</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Contact section -->
+  <url>
+    <loc>https://nathanjhanvey.github.io/ExpressionsByTosha/#contact</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
