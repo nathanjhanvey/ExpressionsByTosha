@@ -1,0 +1,8 @@
+# robots.txt for Expressions by Tosha Hanvey
+# https://nathanjhanvey.github.io/ExpressionsByTosha/
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://nathanjhanvey.github.io/ExpressionsByTosha/sitemap.xml
