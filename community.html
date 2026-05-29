@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Community | Expressions by Tosha Hanvey</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#fdf8f5;--bg2:#f5eef8;--surface:#fffbfe;--accent1:#c9a7d4;--accent2:#e8b4c0;--accent3:#a8c5b0;--text-dark:#3d2f45;--text-mid:#6e5878;--text-light:#9e8faa;--border:#e8dff0;--font-head:'Playfair Display',serif;--font-ui:'Jost',sans-serif;}
+body.theme-empower{--bg:#1a0e2e;--bg2:#251540;--surface:#1f1235;--accent1:#c9a227;--accent2:#e8c76a;--accent3:#8b5cf6;--text-dark:#f5f0ff;--text-mid:#d4c5f0;--text-light:#9980cc;--border:#3d2860;}
+body.theme-warmth{--bg:#fdf5ee;--bg2:#f5ede0;--surface:#fffbf7;--accent1:#c17d5a;--accent2:#8faa78;--accent3:#d4a96a;--text-dark:#3b2515;--text-mid:#7a4f30;--text-light:#a88060;--border:#e8d5c0;}
+body.theme-clarity{--bg:#f8f9fa;--bg2:#e8f4f4;--surface:#fff;--accent1:#2a9d8f;--accent2:#e9c46a;--accent3:#264653;--text-dark:#1a2e2e;--text-mid:#3d6060;--text-light:#7a9a9a;--border:#d0e8e8;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text-dark);font-family:var(--font-ui);font-size:15px;display:flex;flex-direction:column;}
+a{color:var(--accent1);text-decoration:none;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:9px 20px;border-radius:50px;font-family:var(--font-ui);font-size:.76rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;border:none;cursor:pointer;transition:transform .18s,box-shadow .18s;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,0,0,.12);}
+.btn-primary{background:var(--accent1);color:#fff;}
+.btn-outline{background:transparent;color:var(--accent1);border:1.5px solid var(--accent1);}
+.btn-outline:hover{background:var(--accent1);color:#fff;}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--text-mid);}
+.btn-ghost:hover{border-color:var(--accent1);color:var(--accent1);}
+.btn-sm{padding:5px 13px;font-size:.68rem;}
+.btn-danger{background:#e74c3c;color:#fff;}
+
+/* JOIN SCREEN */
+#joinScreen{flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:linear-gradient(135deg,var(--bg2),var(--bg));}
+.join-card{background:var(--surface);border-radius:20px;padding:2.4rem;width:100%;max-width:420px;box-shadow:0 12px 50px rgba(140,100,160,.13);border:1px solid var(--border);}
+.join-logo{font-family:var(--font-head);font-size:1.35rem;font-weight:600;color:var(--text-dark);text-align:center;margin-bottom:.2rem;}
+.join-logo span{display:block;font-size:.72rem;font-style:italic;font-weight:400;color:var(--text-light);font-family:var(--font-ui);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.5rem;}
+.join-title{font-family:var(--font-head);font-size:1.4rem;color:var(--text-dark);text-align:center;margin-bottom:.3rem;}
+.join-title em{font-style:italic;color:var(--accent1);}
+.join-sub{font-size:.8rem;color:var(--text-light);text-align:center;margin-bottom:1.5rem;line-height:1.5;}
+.join-tabs{display:flex;margin-bottom:1.4rem;border-bottom:1px solid var(--border);}
+.join-tab{flex:1;text-align:center;padding:.55rem;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.join-tab.active{color:var(--accent1);border-bottom-color:var(--accent1);}
+.join-form{display:none;flex-direction:column;gap:.75rem;}
+.join-form.active{display:flex;}
+.jf{display:flex;flex-direction:column;gap:3px;}
+.jf label{font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);}
+.jf input{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font-ui);font-size:.86rem;color:var(--text-dark);outline:none;transition:border-color .2s;width:100%;}
+.jf input:focus{border-color:var(--accent1);}
+.join-err{font-size:.74rem;color:#e74c3c;text-align:center;display:none;}
+.join-note{font-size:.68rem;color:var(--text-light);text-align:center;line-height:1.5;}
+.back-link{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;color:var(--text-light);text-decoration:none;margin-bottom:1.2rem;}
+.back-link:hover{color:var(--accent1);}
+
+/* COMMUNITY AREA */
+#communityArea{display:none;flex:1;flex-direction:column;overflow:hidden;}
+
+/* TOP BAR */
+.comm-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.7rem 1.2rem;display:flex;align-items:center;gap:.8rem;flex-shrink:0;}
+.comm-logo{font-family:var(--font-head);font-size:1rem;color:var(--text-dark);font-weight:600;flex-shrink:0;}
+.comm-logo span{font-family:var(--font-ui);font-size:.62rem;color:var(--text-light);font-weight:400;display:block;letter-spacing:.05em;text-transform:uppercase;}
+.room-tabs{display:flex;gap:.3rem;flex:1;overflow-x:auto;}
+.room-tab{background:none;border:1.5px solid var(--border);border-radius:50px;padding:5px 13px;font-family:var(--font-ui);font-size:.7rem;color:var(--text-mid);cursor:pointer;transition:all .18s;white-space:nowrap;position:relative;}
+.room-tab:hover{border-color:var(--accent1);}
+.room-tab.active{background:var(--accent1);border-color:var(--accent1);color:#fff;}
+.room-unread{position:absolute;top:-3px;right:-3px;background:#e74c3c;color:#fff;border-radius:50%;width:14px;height:14px;font-size:.55rem;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.user-pill{background:var(--bg2);border-radius:50px;padding:4px 11px;font-size:.72rem;color:var(--text-mid);display:flex;align-items:center;gap:.45rem;white-space:nowrap;flex-shrink:0;}
+.user-dot{width:7px;height:7px;border-radius:50%;background:#00c851;flex-shrink:0;}
+.comm-tab-btns{display:flex;gap:.25rem;flex-shrink:0;}
+.comm-tab-btn{background:none;border:none;padding:5px 9px;font-size:.7rem;color:var(--text-light);cursor:pointer;border-radius:7px;transition:all .2s;font-family:var(--font-ui);}
+.comm-tab-btn:hover{background:var(--bg2);color:var(--text-dark);}
+.comm-tab-btn.active{background:var(--accent1);color:#fff;}
+.logout-btn{background:none;border:none;color:var(--text-light);cursor:pointer;font-size:.68rem;font-family:var(--font-ui);}
+.logout-btn:hover{color:#e74c3c;}
+
+/* MAIN LAYOUT */
+.comm-body{flex:1;display:flex;overflow:hidden;}
+
+/* SIDEBAR */
+.comm-sidebar{width:180px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-sec{padding:.65rem .85rem .3rem;}
+.sidebar-sec-title{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-light);margin-bottom:.45rem;}
+.online-user{display:flex;align-items:center;gap:.4rem;padding:.3rem 0;font-size:.74rem;color:var(--text-mid);}
+.online-user .ou-dot{width:7px;height:7px;border-radius:50%;background:#00c851;flex-shrink:0;}
+.online-user .ou-admin{font-size:.58rem;background:var(--accent1);color:#fff;border-radius:3px;padding:1px 4px;}
+.activity-card{background:var(--surface);border-radius:9px;padding:.65rem .8rem;margin-bottom:.45rem;border:1px solid var(--border);}
+.ac-time{font-size:.6rem;color:var(--accent1);margin-bottom:.15rem;}
+.ac-title{font-size:.76rem;color:var(--text-dark);font-weight:500;}
+.ac-type{font-size:.62rem;color:var(--text-light);}
+
+/* CHAT */
+.chat-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-messages{flex:1;overflow-y:auto;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.5rem;}
+.chat-empty{text-align:center;padding:3rem 1rem;color:var(--text-light);font-size:.82rem;}
+.chat-date-sep{text-align:center;font-size:.62rem;color:var(--text-light);margin:.35rem 0;position:relative;}
+.chat-date-sep::before,.chat-date-sep::after{content:'';position:absolute;top:50%;width:calc(50% - 3rem);height:1px;background:var(--border);}
+.chat-date-sep::before{left:0;}
+.chat-date-sep::after{right:0;}
+.msg-row{display:flex;gap:.55rem;align-items:flex-end;max-width:85%;}
+.msg-row.mine{align-self:flex-end;flex-direction:row-reverse;}
+.msg-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:600;flex-shrink:0;align-self:flex-start;}
+.msg-avatar.admin-av{background:linear-gradient(135deg,var(--accent1),var(--accent2));}
+.msg-content{display:flex;flex-direction:column;gap:.18rem;}
+.msg-meta{font-size:.6rem;color:var(--text-light);display:flex;align-items:center;gap:.4rem;}
+.msg-meta.mine{justify-content:flex-end;}
+.msg-admin-badge{background:var(--accent1);color:#fff;border-radius:3px;padding:1px 5px;font-size:.55rem;}
+.msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:14px 14px 14px 2px;padding:.55rem .85rem;font-size:.84rem;color:var(--text-dark);line-height:1.55;word-break:break-word;}
+.msg-row.mine .msg-bubble{background:var(--accent1);color:#fff;border:none;border-radius:14px 14px 2px 14px;}
+.msg-actions{display:flex;gap:.3rem;align-items:center;margin-top:.18rem;}
+.msg-react-btn{background:var(--bg2);border:1px solid var(--border);border-radius:50px;padding:2px 8px;font-size:.7rem;cursor:pointer;transition:all .15s;}
+.msg-react-btn:hover{border-color:var(--accent1);}
+.msg-react-btn.reacted{background:var(--accent1);border-color:var(--accent1);color:#fff;}
+.msg-delete-btn{background:none;border:none;font-size:.7rem;color:var(--text-light);cursor:pointer;padding:2px 4px;transition:color .15s;}
+.msg-delete-btn:hover{color:#e74c3c;}
+.msg-deleted{font-style:italic;color:var(--text-light);font-size:.8rem;}
+.typing-indicator{font-size:.72rem;color:var(--text-light);padding:.3rem .5rem;display:none;}
+.chat-input-area{padding:.7rem 1rem;border-top:1px solid var(--border);background:var(--surface);}
+.active-activity-banner{background:linear-gradient(135deg,var(--accent1),var(--accent2));padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.aab-text{font-size:.78rem;color:#fff;font-weight:500;}
+.aab-join{background:#fff;color:var(--accent1);border:none;border-radius:50px;padding:4px 14px;font-size:.7rem;font-weight:600;cursor:pointer;font-family:var(--font-ui);}
+.chat-input-row{display:flex;gap:.55rem;align-items:flex-end;}
+.chat-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;font-family:var(--font-ui);font-size:.86rem;color:var(--text-dark);outline:none;resize:none;max-height:120px;min-height:38px;transition:border-color .2s;line-height:1.4;}
+.chat-input:focus{border-color:var(--accent1);}
+.send-btn{background:var(--accent1);color:#fff;border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:1rem;transition:transform .15s;}
+.send-btn:hover{transform:scale(1.08);}
+
+/* ACTIVITIES PANEL */
+.panel{flex:1;display:none;flex-direction:column;overflow-y:auto;padding:1rem;}
+.panel.active{display:flex;}
+.panel-title{font-family:var(--font-head);font-size:1.25rem;color:var(--text-dark);margin-bottom:.3rem;}
+.panel-sub{font-size:.78rem;color:var(--text-light);margin-bottom:1.2rem;}
+.activity-list{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.5rem;}
+.act-card{background:var(--surface);border-radius:13px;padding:1rem 1.2rem;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.8rem;}
+.act-info{flex:1;}
+.act-time{font-size:.65rem;color:var(--accent1);margin-bottom:.15rem;}
+.act-title{font-size:.9rem;font-weight:600;color:var(--text-dark);margin-bottom:.12rem;}
+.act-desc{font-size:.76rem;color:var(--text-mid);}
+.act-badge{border-radius:50px;padding:3px 10px;font-size:.64rem;font-weight:600;text-transform:uppercase;white-space:nowrap;}
+.act-badge.upcoming{background:rgba(201,167,212,.2);color:var(--accent1);}
+.act-badge.live{background:rgba(0,200,81,.15);color:#007a30;}
+.active-activity-panel{background:linear-gradient(135deg,var(--bg2),var(--surface));border-radius:16px;padding:1.5rem;border:1px solid var(--border);margin-bottom:1.2rem;}
+.aap-type{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent1);margin-bottom:.4rem;}
+.aap-title{font-family:var(--font-head);font-size:1.15rem;color:var(--text-dark);margin-bottom:.5rem;}
+.aap-prompt{background:var(--surface);border-radius:10px;padding:.9rem 1.1rem;border:1px solid var(--border);font-size:.88rem;color:var(--text-mid);margin-bottom:.9rem;line-height:1.6;font-style:italic;}
+.aap-responses{display:flex;flex-direction:column;gap:.45rem;margin-bottom:.9rem;max-height:220px;overflow-y:auto;}
+.aap-response{background:var(--surface);border-radius:9px;padding:.6rem .85rem;border:1px solid var(--border);font-size:.82rem;color:var(--text-dark);}
+.aap-response .resp-author{font-size:.66rem;color:var(--accent1);margin-bottom:.1rem;font-weight:500;}
+.aap-input-row{display:flex;gap:.5rem;}
+.aap-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;font-family:var(--font-ui);font-size:.84rem;color:var(--text-dark);outline:none;transition:border-color .2s;}
+.aap-input:focus{border-color:var(--accent1);}
+
+/* GAMES PANEL */
+.games-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.5rem;}
+.game-card{background:var(--surface);border-radius:13px;padding:1.1rem;border:1px solid var(--border);cursor:pointer;transition:all .2s;text-align:center;}
+.game-card:hover{border-color:var(--accent1);transform:translateY(-2px);box-shadow:0 6px 22px rgba(140,100,160,.1);}
+.game-card.active-game{border-color:var(--accent1);background:rgba(201,167,212,.08);}
+.game-icon{font-size:2rem;margin-bottom:.5rem;}
+.game-name{font-size:.82rem;font-weight:600;color:var(--text-dark);margin-bottom:.18rem;}
+.game-desc{font-size:.7rem;color:var(--text-light);}
+.game-area{background:var(--surface);border-radius:16px;padding:1.3rem;border:1px solid var(--border);}
+.game-area-title{font-family:var(--font-head);font-size:1.1rem;color:var(--text-dark);margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;}
+/* Word Association */
+.wa-current{background:linear-gradient(135deg,var(--accent1),var(--accent2));border-radius:13px;padding:1.3rem;text-align:center;margin-bottom:.9rem;}
+.wa-word{font-family:var(--font-head);font-size:2rem;color:#fff;margin-bottom:.3rem;}
+.wa-by{font-size:.7rem;color:rgba(255,255,255,.7);}
+.wa-history{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.9rem;}
+.wa-hist-item{background:var(--bg2);border-radius:50px;padding:3px 11px;font-size:.74rem;color:var(--text-mid);}
+/* This or That */
+.tot-question{font-size:.95rem;font-weight:600;color:var(--text-dark);margin-bottom:1rem;text-align:center;}
+.tot-options{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom.9rem;}
+.tot-option{background:var(--bg2);border:2px solid var(--border);border-radius:13px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s;}
+.tot-option:hover{border-color:var(--accent1);}
+.tot-option.voted{border-color:var(--accent1);background:rgba(201,167,212,.15);}
+.tot-opt-label{font-size:.9rem;font-weight:600;color:var(--text-dark);margin-bottom:.5rem;}
+.tot-bar-wrap{background:var(--border);border-radius:50px;height:6px;overflow:hidden;}
+.tot-bar{height:100%;background:var(--accent1);border-radius:50px;transition:width .4s ease;}
+.tot-count{font-size:.68rem;color:var(--text-light);margin-top:.3rem;}
+/* Collaborative Story */
+.cs-story{background:var(--bg2);border-radius:11px;padding:.9rem 1.1rem;max-height:200px;overflow-y:auto;margin-bottom:.9rem;font-size:.84rem;color:var(--text-dark);line-height:1.7;}
+.cs-sentence{display:inline;}
+.cs-author{font-size:.65rem;color:var(--accent1);vertical-align:super;}
+/* No game selected */
+.no-game{text-align:center;padding:2rem;color:var(--text-light);font-size:.82rem;}
+
+/* ADMIN GAME CONTROLS */
+.admin-game-panel{background:var(--bg2);border-radius:11px;padding:.85rem 1rem;border:1px solid var(--border);margin-top:.9rem;border-left:3px solid var(--accent1);}
+.agp-title{font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent1);margin-bottom:.6rem;}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .comm-sidebar{display:none;}
+  .games-grid{grid-template-columns:1fr;}
+  html,body{overflow:auto;}
+  .comm-body{flex-direction:column;}
+  .chat-panel,.panel{min-height:60vh;}
+}
+</style>
+</head>
+<body>
+
+<!-- JOIN SCREEN -->
+<div id="joinScreen">
+  <div class="join-card">
+    <div class="join-logo">Expressions by Tosha Hanvey<span>Community Space</span></div>
+    <div class="join-title">Welcome to our <em>community</em></div>
+    <p class="join-sub">A safe space for healing, connection, and joy. Open to members, subscribers, and invited guests.</p>
+    <div class="join-tabs">
+      <div class="join-tab active" onclick="switchJoinTab('member',this)">I'm a Member</div>
+      <div class="join-tab" onclick="switchJoinTab('invite',this)">Invite Code</div>
+      <div class="join-tab" onclick="switchJoinTab('admin',this)">⚙ Admin</div>
+    </div>
+    <!-- MEMBER -->
+    <form class="join-form active" id="jf-member" onsubmit="joinWithEmail(event)">
+      <div class="jf"><label>Your Email</label><input type="email" id="j-email" placeholder="the email you ordered or subscribed with" required/></div>
+      <div class="jf"><label>Your Display Name</label><input type="text" id="j-name" placeholder="What should we call you?" required maxlength="24"/></div>
+      <button type="submit" class="btn btn-primary">Enter the Community →</button>
+      <div class="join-err" id="member-err"></div>
+      <p class="join-note">Don't have an account? <a href="/ExpressionsByTosha/#newsletter">Subscribe free</a> or <a href="/ExpressionsByTosha/#shop">visit the shop</a>.</p>
+    </form>
+    <!-- INVITE -->
+    <form class="join-form" id="jf-invite" onsubmit="joinWithCode(event)">
+      <div class="jf"><label>Invite Code</label><input type="text" id="j-code" placeholder="Enter your invite code" required/></div>
+      <div class="jf"><label>Your Display Name</label><input type="text" id="j-code-name" placeholder="What should we call you?" required maxlength="24"/></div>
+      <button type="submit" class="btn btn-primary">Enter with Code →</button>
+      <div class="join-err" id="invite-err"></div>
+    </form>
+    <!-- ADMIN -->
+    <form class="join-form" id="jf-admin" onsubmit="joinAsAdmin(event)">
+      <div class="jf"><label>Admin Password</label><input type="password" id="j-admin-pwd" required/></div>
+      <div class="jf"><label>Your Display Name</label><input type="text" id="j-admin-name" value="Tosha" required maxlength="24"/></div>
+      <button type="submit" class="btn btn-primary">Enter as Admin →</button>
+      <div class="join-err" id="admin-err"></div>
+    </form>
+    <div style="text-align:center;margin-top:1rem;">
+      <a href="/ExpressionsByTosha/" class="back-link">← Back to the main site</a>
+    </div>
+  </div>
+</div>
+
+<!-- COMMUNITY AREA -->
+<div id="communityArea">
+  <!-- TOP BAR -->
+  <div class="comm-topbar">
+    <div class="comm-logo">Expressions<span>Community</span></div>
+    <div class="room-tabs" id="roomTabs">
+      <button class="room-tab active" data-room="general" onclick="switchRoom('general',this)">💬 General</button>
+      <button class="room-tab" data-room="healing" onclick="switchRoom('healing',this)">💜 Healing Corner</button>
+      <button class="room-tab" data-room="checkin" onclick="switchRoom('checkin',this)">🌅 Daily Check-In</button>
+    </div>
+    <div class="comm-tab-btns">
+      <button class="comm-tab-btn active" id="ctb-chat" onclick="switchCommTab('chat',this)">💬 Chat</button>
+      <button class="comm-tab-btn" id="ctb-activities" onclick="switchCommTab('activities',this)">🎯 Activities</button>
+      <button class="comm-tab-btn" id="ctb-games" onclick="switchCommTab('games',this)">🎮 Games</button>
+    </div>
+    <div class="user-pill"><span class="user-dot"></span><span id="topUserName"></span></div>
+    <button class="logout-btn" onclick="logout()">Leave</button>
+  </div>
+
+  <!-- BODY -->
+  <div class="comm-body">
+    <!-- SIDEBAR -->
+    <div class="comm-sidebar">
+      <div class="sidebar-sec">
+        <div class="sidebar-sec-title">Online Now</div>
+        <div id="onlineList"><div style="font-size:.72rem;color:var(--text-light);">Loading...</div></div>
+      </div>
+      <div class="sidebar-sec">
+        <div class="sidebar-sec-title">Upcoming</div>
+        <div id="sidebarActivities"></div>
+      </div>
+    </div>
+
+    <!-- CHAT PANEL -->
+    <div class="chat-panel" id="chatPanel">
+      <div id="activityBanner" class="active-activity-banner" style="display:none;">
+        <span class="aab-text" id="bannerText">🎯 Activity in progress</span>
+        <button class="aab-join" onclick="switchCommTab('activities',document.getElementById('ctb-activities'))">Join →</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"><div class="chat-empty">Be the first to say hello 👋</div></div>
+      <div class="typing-indicator" id="typingIndicator"></div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chatInput" placeholder="Say something warm... (Enter to send)" rows="1" onkeydown="handleChatKey(event)" oninput="autoGrow(this)"></textarea>
+          <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITIES PANEL -->
+    <div class="panel" id="activitiesPanel">
+      <div class="panel-title">🎯 Activities</div>
+      <div class="panel-sub">Scheduled therapeutic activities led by Tosha. Join when they go live.</div>
+      <div id="activeActivityPanel"></div>
+      <div class="activity-list" id="activityList"><div class="chat-empty">No activities scheduled yet.</div></div>
+    </div>
+
+    <!-- GAMES PANEL -->
+    <div class="panel" id="gamesPanel">
+      <div class="panel-title">🎮 Games</div>
+      <div class="panel-sub">Simple games to play together. No pressure, just fun and connection.</div>
+      <div class="games-grid">
+        <div class="game-card" id="gc-wordassoc" onclick="selectGame('wordassoc')"><div class="game-icon">💬</div><div class="game-name">Word Association</div><div class="game-desc">One word leads to another</div></div>
+        <div class="game-card" id="gc-thisorthat" onclick="selectGame('thisorthat')"><div class="game-icon">🤔</div><div class="game-name">This or That</div><div class="game-desc">Vote on fun choices</div></div>
+        <div class="game-card" id="gc-story" onclick="selectGame('story')"><div class="game-icon">📖</div><div class="game-name">Our Story</div><div class="game-desc">Write a story together</div></div>
+        <div class="game-card" id="gc-gratitude" onclick="selectGame('gratitude')"><div class="game-icon">🌸</div><div class="game-name">Gratitude Circle</div><div class="game-desc">Share what you're thankful for</div></div>
+      </div>
+      <div class="game-area" id="gameArea"><div class="no-game">Choose a game above to get started 🎉</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════
+const FB_CONFIG={apiKey:"AIzaSyBN4F4xjaZvVkHNR7Rwp6Ct8J8ildc7KKA",authDomain:"expressionsbytosha.firebaseapp.com",projectId:"expressionsbytosha",storageBucket:"expressionsbytosha.firebasestorage.app",messagingSenderId:"745756496844",appId:"1:745756496844:web:51ea4f9a5715e2623e8369",databaseURL:"https://expressionsbytosha-default-rtdb.firebaseio.com/"};
+firebase.initializeApp(FB_CONFIG);
+const db=firebase.firestore();
+const rtdb=firebase.database();
+
+// ═══════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════
+(()=>{const t=localStorage.getItem('ebth-theme');if(t&&t!=='serenity')document.body.classList.add('theme-'+t);})();
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentUser=null;
+let currentRoom='general';
+let currentGame=null;
+let msgListeners={};
+let onlineRef=null;
+let activityListener=null;
+
+const ROOMS={general:{label:'💬 General',desc:'Chat about anything'},healing:{label:'💜 Healing Corner',desc:'A space for support'},checkin:{label:'🌅 Daily Check-In',desc:'How are you today?'}};
+const REACT_EMOJI='💜';
+
+// ═══════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════
+function checkSession(){
+  const s=JSON.parse(localStorage.getItem('ebth-comm-session')||'null');
+  if(s&&s.expires>Date.now()){currentUser=s;showCommunity();}
+  else showJoin();
+}
+function createSession(email,name,type,isAdmin=false){
+  currentUser={email,name,type,isAdmin,sessionId:'s'+Date.now()+Math.random().toString(36).slice(2),expires:Date.now()+7*24*3600*1000};
+  localStorage.setItem('ebth-comm-session',JSON.stringify(currentUser));
+}
+function logout(){
+  if(onlineRef)onlineRef.remove();
+  Object.values(msgListeners).forEach(fn=>fn&&fn());
+  if(activityListener)activityListener();
+  localStorage.removeItem('ebth-comm-session');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════
+// JOIN FLOW
+// ═══════════════════════════════════════════
+function showJoin(){document.getElementById('joinScreen').style.display='flex';document.getElementById('communityArea').style.display='none';}
+function showCommunity(){
+  document.getElementById('joinScreen').style.display='none';
+  const ca=document.getElementById('communityArea');ca.style.display='flex';
+  document.getElementById('topUserName').textContent=currentUser.name+(currentUser.isAdmin?' 👑':'');
+  switchRoom('general',document.querySelector('.room-tab'));
+  startOnlinePresence();
+  listenToActivities();
+  listenToUpcomingActivities();
+  selectGame(null);
+}
+function switchJoinTab(tab,el){
+  document.querySelectorAll('.join-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.join-form').forEach(f=>f.classList.remove('active'));
+  document.getElementById('jf-'+tab).classList.add('active');
+}
+async function joinWithEmail(e){
+  e.preventDefault();
+  const email=document.getElementById('j-email').value.trim().toLowerCase();
+  const name=document.getElementById('j-name').value.trim();
+  const errEl=document.getElementById('member-err');errEl.style.display='none';
+  try{
+    const [orderSnap,subSnap]=await Promise.all([
+      db.collection('orders').where('email','==',email).limit(1).get(),
+      db.collection('subscribers').where('email','==',email).limit(1).get()
+    ]);
+    if(!orderSnap.empty||!subSnap.empty){
+      createSession(email,name,'member');showCommunity();
+    } else {
+      errEl.textContent='Email not found. You need to have placed an order or subscribed to join.';errEl.style.display='block';
+    }
+  }catch(err){errEl.textContent='Connection error. Please try again.';errEl.style.display='block';}
+}
+async function joinWithCode(e){
+  e.preventDefault();
+  const code=document.getElementById('j-code').value.trim().toUpperCase();
+  const name=document.getElementById('j-code-name').value.trim();
+  const errEl=document.getElementById('invite-err');errEl.style.display='none';
+  try{
+    const inviteSnap=await db.collection('community-invites').doc(code).get();
+    if(inviteSnap.exists&&!inviteSnap.data().used){
+      await db.collection('community-invites').doc(code).update({used:true,usedBy:name,usedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      createSession(inviteSnap.data().email||'guest',name,'invited');showCommunity();
+    } else {
+      errEl.textContent='Invalid or already used invite code.';errEl.style.display='block';
+    }
+  }catch(err){errEl.textContent='Connection error. Please try again.';errEl.style.display='block';}
+}
+async function joinAsAdmin(e){
+  e.preventDefault();
+  const pwd=document.getElementById('j-admin-pwd').value;
+  const name=document.getElementById('j-admin-name').value.trim();
+  const errEl=document.getElementById('admin-err');errEl.style.display='none';
+  const sitePwd=localStorage.getItem('ebth-pwd')||'Tosha2024';
+  if(pwd===sitePwd){createSession('admin@expressionsbytosha.com',name,'admin',true);showCommunity();}
+  else{errEl.textContent='Incorrect password.';errEl.style.display='block';}
+}
+
+// ═══════════════════════════════════════════
+// ONLINE PRESENCE
+// ═══════════════════════════════════════════
+function startOnlinePresence(){
+  onlineRef=rtdb.ref('community/online/'+currentUser.sessionId);
+  onlineRef.set({name:currentUser.name,isAdmin:currentUser.isAdmin,room:currentRoom,since:firebase.database.ServerValue.TIMESTAMP});
+  onlineRef.onDisconnect().remove();
+  rtdb.ref('community/online').on('value',snap=>{
+    const users=snap.val()||{};
+    const list=document.getElementById('onlineList');
+    const arr=Object.values(users);
+    if(!arr.length){list.innerHTML='<div style="font-size:.72rem;color:var(--text-light);">Just you so far 🌱</div>';return;}
+    list.innerHTML=arr.map(u=>`<div class="online-user"><span class="ou-dot"></span><span>${esc(u.name)}</span>${u.isAdmin?'<span class="ou-admin">Host</span>':''}</div>`).join('');
+  });
+}
+function updateMyRoom(room){if(onlineRef)onlineRef.update({room});}
+
+// ═══════════════════════════════════════════
+// ROOMS & TABS
+// ═══════════════════════════════════════════
+function switchRoom(room,btn){
+  if(msgListeners[currentRoom]){msgListeners[currentRoom]();delete msgListeners[currentRoom];}
+  currentRoom=room;
+  document.querySelectorAll('.room-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  updateMyRoom(room);
+  loadMessages(room);
+}
+function switchCommTab(tab,btn){
+  document.querySelectorAll('.comm-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('chatPanel').style.display=tab==='chat'?'flex':'none';
+  document.getElementById('activitiesPanel').classList.toggle('active',tab==='activities');
+  document.getElementById('gamesPanel').classList.toggle('active',tab==='games');
+}
+
+// ═══════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════
+function loadMessages(room){
+  const el=document.getElementById('chatMessages');
+  el.innerHTML='<div class="chat-empty">Be the first to say hello 👋</div>';
+  const ref=rtdb.ref('community/messages/'+room);
+  const onAdd=ref.limitToLast(60).on('child_added',snap=>{
+    if(el.querySelector('.chat-empty'))el.innerHTML='';
+    const msg={id:snap.key,...snap.val()};
+    el.appendChild(buildMsgEl(msg));
+    el.scrollTop=el.scrollHeight;
+  });
+  const onChanged=ref.on('child_changed',snap=>{
+    const old=el.querySelector('[data-id="'+snap.key+'"]');
+    if(old){const updated=buildMsgEl({id:snap.key,...snap.val()});old.replaceWith(updated);}
+  });
+  const onRemoved=ref.on('child_removed',snap=>{
+    const old=el.querySelector('[data-id="'+snap.key+'"]');
+    if(old)old.remove();
+    if(!el.children.length)el.innerHTML='<div class="chat-empty">Be the first to say hello 👋</div>';
+  });
+  msgListeners[room]=()=>{ref.off('child_added',onAdd);ref.off('child_changed',onChanged);ref.off('child_removed',onRemoved);};
+}
+function buildMsgEl(msg){
+  const isMine=msg.authorId===currentUser.sessionId;
+  const isAdmin=msg.isAdmin;
+  const div=document.createElement('div');div.className='msg-row'+(isMine?' mine':'');div.dataset.id=msg.id;
+  if(msg.deleted){div.innerHTML=`<div class="msg-deleted">Message removed</div>`;return div;}
+  const init=(msg.author||'?')[0].toUpperCase();
+  const reactions=msg.reactions||{};const reactCount=Object.keys(reactions).length;
+  const iReacted=reactions[currentUser.sessionId];
+  const canDelete=isMine||currentUser.isAdmin;
+  div.innerHTML=`
+    ${!isMine?`<div class="msg-avatar${isAdmin?' admin-av':''}">${init}</div>`:''}
+    <div class="msg-content">
+      <div class="msg-meta${isMine?' mine':''}">${!isMine?`<span>${esc(msg.author)}</span>${isAdmin?'<span class="msg-admin-badge">Host</span>':''}`:''}<span>${formatTime(msg.timestamp)}</span></div>
+      <div class="msg-bubble">${esc(msg.text)}</div>
+      <div class="msg-actions${isMine?' mine':''}">
+        <button class="msg-react-btn${iReacted?' reacted':''}" onclick="toggleReaction('${msg.id}')">${REACT_EMOJI}${reactCount>0?' '+reactCount:''}</button>
+        ${canDelete?`<button class="msg-delete-btn" onclick="deleteMsg('${msg.id}')" title="Delete">🗑</button>`:''}
+      </div>
+    </div>
+    ${isMine?`<div class="msg-avatar${isAdmin?' admin-av':''}">${init}</div>`:''}`;
+  return div;
+}
+function sendMessage(){
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';inp.style.height='38px';
+  rtdb.ref('community/messages/'+currentRoom).push({text,author:currentUser.name,authorId:currentUser.sessionId,isAdmin:currentUser.isAdmin||false,timestamp:firebase.database.ServerValue.TIMESTAMP,reactions:{}});
+}
+function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoGrow(el){el.style.height='38px';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function toggleReaction(msgId){
+  const ref=rtdb.ref('community/messages/'+currentRoom+'/'+msgId+'/reactions/'+currentUser.sessionId);
+  const reactions=document.querySelector('[data-id="'+msgId+'"] .msg-react-btn');
+  if(reactions&&reactions.classList.contains('reacted')){ref.remove();}else{ref.set(currentUser.name);}
+}
+function deleteMsg(msgId){
+  if(!confirm('Delete this message?'))return;
+  rtdb.ref('community/messages/'+currentRoom+'/'+msgId).update({deleted:true,text:''});
+}
+
+// ═══════════════════════════════════════════
+// ACTIVITIES
+// ═══════════════════════════════════════════
+function listenToActivities(){
+  rtdb.ref('community/activity/active').on('value',snap=>{
+    const act=snap.val();
+    const banner=document.getElementById('activityBanner');
+    if(act&&act.status==='active'){
+      banner.style.display='flex';
+      document.getElementById('bannerText').textContent='🎯 Live: '+act.title;
+      renderActiveActivity(act);
+    } else {
+      banner.style.display='none';
+      document.getElementById('activeActivityPanel').innerHTML='';
+    }
+  });
+}
+async function listenToUpcomingActivities(){
+  const now=new Date();
+  db.collection('community-activities').where('status','==','scheduled').orderBy('scheduledFor').onSnapshot(snap=>{
+    const sidebar=document.getElementById('sidebarActivities');
+    const list=document.getElementById('activityList');
+    if(snap.empty){sidebar.innerHTML='<div style="font-size:.72rem;color:var(--text-light);">Nothing scheduled</div>';list.innerHTML='<div class="chat-empty">No activities scheduled yet.</div>';return;}
+    const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    sidebar.innerHTML=items.slice(0,3).map(a=>`<div class="activity-card"><div class="ac-time">${formatActivityTime(a.scheduledFor)}</div><div class="ac-title">${esc(a.title)}</div><div class="ac-type">${esc(a.type)}</div></div>`).join('');
+    list.innerHTML=items.map(a=>`<div class="act-card"><div class="act-info"><div class="act-time">${formatActivityTime(a.scheduledFor)}</div><div class="act-title">${esc(a.title)}</div><div class="act-desc">${esc(a.prompt||'')}</div></div><span class="act-badge upcoming">Upcoming</span>${currentUser.isAdmin?`<button class="btn btn-sm btn-primary" onclick="startActivity('${a.id}')">Start</button>`:''}</div>`).join('');
+  });
+}
+function renderActiveActivity(act){
+  const el=document.getElementById('activeActivityPanel');
+  el.innerHTML=`<div class="active-activity-panel">
+    <div class="aap-type">${esc(act.type)}</div>
+    <div class="aap-title">${esc(act.title)}</div>
+    <div class="aap-prompt">${esc(act.prompt)}</div>
+    <div class="aap-responses" id="actResponses"></div>
+    <div class="aap-input-row">
+      <input class="aap-input" id="actRespInput" placeholder="Share your response..." onkeydown="if(event.key==='Enter')submitActivityResponse()"/>
+      <button class="btn btn-primary btn-sm" onclick="submitActivityResponse()">Share</button>
+    </div>
+    ${currentUser.isAdmin?`<button class="btn btn-ghost btn-sm" style="margin-top:.6rem;width:100%;" onclick="endActivity()">End Activity</button>`:''}
+  </div>`;
+  rtdb.ref('community/activity/responses').on('value',snap=>{
+    const responses=snap.val()||{};
+    const el2=document.getElementById('actResponses');
+    if(!el2)return;
+    const arr=Object.values(responses);
+    el2.innerHTML=arr.length?arr.map(r=>`<div class="aap-response"><div class="resp-author">${esc(r.author)}</div>${esc(r.text)}</div>`).join(''):'<div style="font-size:.76rem;color:var(--text-light);">No responses yet. Be first! 💜</div>';
+    el2.scrollTop=el2.scrollHeight;
+  });
+}
+function submitActivityResponse(){
+  const inp=document.getElementById('actRespInput');const text=inp.value.trim();if(!text)return;inp.value='';
+  rtdb.ref('community/activity/responses/'+currentUser.sessionId).set({text,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP});
+}
+async function startActivity(id){
+  const snap=await db.collection('community-activities').doc(id).get();
+  const act=snap.data();
+  rtdb.ref('community/activity/active').set({...act,id,status:'active',startedAt:firebase.database.ServerValue.TIMESTAMP});
+  rtdb.ref('community/activity/responses').remove();
+  db.collection('community-activities').doc(id).update({status:'live'});
+  switchCommTab('activities',document.getElementById('ctb-activities'));
+}
+function endActivity(){
+  rtdb.ref('community/activity/active').remove();
+  rtdb.ref('community/activity/responses').remove();
+}
+
+// ═══════════════════════════════════════════
+// GAMES
+// ═══════════════════════════════════════════
+function selectGame(game){
+  currentGame=game;
+  document.querySelectorAll('.game-card').forEach(c=>c.classList.remove('active-game'));
+  if(game)document.getElementById('gc-'+game)?.classList.add('active-game');
+  const area=document.getElementById('gameArea');
+  if(!game){area.innerHTML='<div class="no-game">Choose a game above to get started 🎉</div>';return;}
+  const adminControls=currentUser.isAdmin?buildAdminGameControls(game):'';
+  if(game==='wordassoc')renderWordAssoc(area,adminControls);
+  else if(game==='thisorthat')renderThisOrThat(area,adminControls);
+  else if(game==='story')renderCollabStory(area,adminControls);
+  else if(game==='gratitude')renderGratitudeCircle(area,adminControls);
+}
+
+// WORD ASSOCIATION
+function renderWordAssoc(area,adminControls){
+  area.innerHTML=`<div class="game-area-title">💬 Word Association<button class="btn btn-sm btn-ghost" onclick="selectGame('wordassoc')">↺ Refresh</button></div>
+    <div class="wa-current"><div class="wa-word" id="waWord">—</div><div class="wa-by" id="waBy">Waiting for first word...</div></div>
+    <div id="waHistory" class="wa-history"></div>
+    <div class="aap-input-row"><input class="aap-input" id="waInput" placeholder="Type the next word you think of..." onkeydown="if(event.key==='Enter')postWordAssoc()"/><button class="btn btn-primary btn-sm" onclick="postWordAssoc()">Post</button></div>
+    ${adminControls}`;
+  rtdb.ref('community/games/wordassoc').on('value',snap=>{
+    const d=snap.val()||{};
+    document.getElementById('waWord').textContent=d.word||'—';
+    document.getElementById('waBy').textContent=d.word?('Last by '+d.author):'Be first — type any word!';
+    const hist=document.getElementById('waHistory');
+    if(hist)hist.innerHTML=(d.history||[]).slice(-12).map(w=>`<span class="wa-hist-item">${esc(w)}</span>`).join('');
+  });
+}
+function postWordAssoc(){
+  const inp=document.getElementById('waInput');const word=inp.value.trim();if(!word||word.includes(' ')){alert('One word only!');return;}inp.value='';
+  rtdb.ref('community/games/wordassoc').transaction(cur=>{const hist=(cur?.history||[]);hist.push(word);return{word,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP,history:hist.slice(-20)};});
+}
+
+// THIS OR THAT
+function renderThisOrThat(area,adminControls){
+  area.innerHTML=`<div class="game-area-title">🤔 This or That<button class="btn btn-sm btn-ghost" onclick="selectGame('thisorthat')">↺ Refresh</button></div>
+    <div id="totContent"><div class="no-game">Waiting for Tosha to post a question 😊</div></div>
+    ${adminControls}`;
+  rtdb.ref('community/games/thisorthat').on('value',snap=>{
+    const d=snap.val();const el=document.getElementById('totContent');if(!el)return;
+    if(!d){el.innerHTML='<div class="no-game">Waiting for Tosha to post a question 😊</div>';return;}
+    const votes=d.votes||{};const myVote=votes[currentUser.sessionId];
+    const countA=Object.values(votes).filter(v=>v==='A').length;
+    const countB=Object.values(votes).filter(v=>v==='B').length;
+    const total=countA+countB||1;
+    el.innerHTML=`<div class="tot-question">${esc(d.question||'Which do you prefer?')}</div>
+      <div class="tot-options">
+        <div class="tot-option${myVote==='A'?' voted':''}" onclick="voteThisOrThat('A')">
+          <div class="tot-opt-label">${esc(d.optionA)}</div>
+          <div class="tot-bar-wrap"><div class="tot-bar" style="width:${Math.round(countA/total*100)}%"></div></div>
+          <div class="tot-count">${countA} vote${countA!==1?'s':''} · ${Math.round(countA/total*100)}%</div>
+        </div>
+        <div class="tot-option${myVote==='B'?' voted':''}" onclick="voteThisOrThat('B')">
+          <div class="tot-opt-label">${esc(d.optionB)}</div>
+          <div class="tot-bar-wrap"><div class="tot-bar" style="width:${Math.round(countB/total*100)}%"></div></div>
+          <div class="tot-count">${countB} vote${countB!==1?'s':''} · ${Math.round(countB/total*100)}%</div>
+        </div>
+      </div>`;
+  });
+}
+function voteThisOrThat(choice){rtdb.ref('community/games/thisorthat/votes/'+currentUser.sessionId).set(choice);}
+
+// COLLABORATIVE STORY
+function renderCollabStory(area,adminControls){
+  area.innerHTML=`<div class="game-area-title">📖 Our Story<button class="btn btn-sm btn-ghost" onclick="selectGame('story')">↺ Refresh</button></div>
+    <div class="cs-story" id="csStory"><em style="color:var(--text-light)">The story begins when someone adds the first sentence...</em></div>
+    <div class="aap-input-row"><input class="aap-input" id="csInput" placeholder="Add the next sentence to the story..." onkeydown="if(event.key==='Enter')addStorySentence()"/><button class="btn btn-primary btn-sm" onclick="addStorySentence()">Add</button></div>
+    ${adminControls}`;
+  rtdb.ref('community/games/story/sentences').limitToLast(30).on('value',snap=>{
+    const el=document.getElementById('csStory');if(!el)return;
+    const sentences=snap.val()?Object.values(snap.val()):[];
+    el.innerHTML=sentences.length?sentences.map(s=>`<span class="cs-sentence">${esc(s.text)} <sup class="cs-author">${esc(s.author)}</sup> </span>`).join(''):'<em style="color:var(--text-light)">The story begins when someone adds the first sentence...</em>';
+    el.scrollTop=el.scrollHeight;
+  });
+}
+function addStorySentence(){
+  const inp=document.getElementById('csInput');let text=inp.value.trim();if(!text)return;
+  if(!text.match(/[.!?]$/))text+='.';inp.value='';
+  rtdb.ref('community/games/story/sentences').push({text,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP});
+}
+
+// GRATITUDE CIRCLE
+function renderGratitudeCircle(area,adminControls){
+  area.innerHTML=`<div class="game-area-title">🌸 Gratitude Circle<button class="btn btn-sm btn-ghost" onclick="selectGame('gratitude')">↺ Refresh</button></div>
+    <div class="aap-prompt" id="gratPrompt">${esc('"What is one thing, big or small, that you are grateful for today?"')}</div>
+    <div class="aap-responses" id="gratResponses" style="max-height:260px;"></div>
+    <div class="aap-input-row"><input class="aap-input" id="gratInput" placeholder="Share your gratitude..." onkeydown="if(event.key==='Enter')shareGratitude()"/><button class="btn btn-primary btn-sm" onclick="shareGratitude()">Share 🌸</button></div>
+    ${adminControls}`;
+  rtdb.ref('community/games/gratitude/responses').on('value',snap=>{
+    const el=document.getElementById('gratResponses');if(!el)return;
+    const arr=snap.val()?Object.values(snap.val()):[];
+    el.innerHTML=arr.length?arr.map(r=>`<div class="aap-response"><div class="resp-author">${esc(r.author)} 🌸</div>${esc(r.text)}</div>`).join(''):'<div style="font-size:.76rem;color:var(--text-light);">Be first to share your gratitude 💜</div>';
+    el.scrollTop=el.scrollHeight;
+  });
+  rtdb.ref('community/games/gratitude/prompt').on('value',snap=>{
+    const el=document.getElementById('gratPrompt');if(el&&snap.val())el.textContent=snap.val();
+  });
+}
+function shareGratitude(){
+  const inp=document.getElementById('gratInput');const text=inp.value.trim();if(!text)return;inp.value='';
+  rtdb.ref('community/games/gratitude/responses').push({text,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP});
+}
+
+// ADMIN GAME CONTROLS
+function buildAdminGameControls(game){
+  if(game==='thisorthat'){
+    return`<div class="admin-game-panel"><div class="agp-title">👑 Admin — Post a Question</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+        <input id="tot-q" class="aap-input" placeholder="Question (optional)"/>
+        <input id="tot-a" class="aap-input" placeholder="Option A"/>
+        <input id="tot-b" class="aap-input" placeholder="Option B"/>
+        <button class="btn btn-primary btn-sm" onclick="postThisOrThat()">Post Question</button>
+        <button class="btn btn-ghost btn-sm" onclick="rtdb.ref('community/games/thisorthat').remove()">Clear</button>
+      </div></div>`;
+  }
+  if(game==='wordassoc'){
+    return`<div class="admin-game-panel"><div class="agp-title">👑 Admin — Reset Word</div>
+      <input id="wa-reset-word" class="aap-input" placeholder="Set a starting word..." style="margin-bottom:.5rem;"/>
+      <button class="btn btn-primary btn-sm" onclick="resetWordAssoc()">Set Starting Word</button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:.4rem;" onclick="rtdb.ref('community/games/wordassoc').remove()">Clear Chain</button>
+    </div>`;
+  }
+  if(game==='story'){
+    return`<div class="admin-game-panel"><div class="agp-title">👑 Admin</div>
+      <button class="btn btn-ghost btn-sm" onclick="if(confirm('Clear the story?'))rtdb.ref('community/games/story').remove()">Clear Story &amp; Start Fresh</button>
+    </div>`;
+  }
+  if(game==='gratitude'){
+    return`<div class="admin-game-panel"><div class="agp-title">👑 Admin — Change Prompt</div>
+      <input id="grat-prompt-inp" class="aap-input" placeholder="Enter a new gratitude prompt..." style="margin-bottom:.5rem;"/>
+      <button class="btn btn-primary btn-sm" onclick="setGratitudePrompt()">Set Prompt</button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:.4rem;" onclick="if(confirm('Clear responses?'))rtdb.ref('community/games/gratitude/responses').remove()">Clear Responses</button>
+    </div>`;
+  }
+  return '';
+}
+function postThisOrThat(){
+  const q=document.getElementById('tot-q')?.value.trim();
+  const a=document.getElementById('tot-a')?.value.trim();
+  const b=document.getElementById('tot-b')?.value.trim();
+  if(!a||!b){alert('Enter both options.');return;}
+  rtdb.ref('community/games/thisorthat').set({question:q||'Which do you prefer?',optionA:a,optionB:b,votes:{}});
+}
+function resetWordAssoc(){
+  const word=document.getElementById('wa-reset-word')?.value.trim();if(!word)return;
+  rtdb.ref('community/games/wordassoc').set({word,author:currentUser.name+'(Admin)',timestamp:firebase.database.ServerValue.TIMESTAMP,history:[word]});
+}
+function setGratitudePrompt(){
+  const p=document.getElementById('grat-prompt-inp')?.value.trim();if(!p)return;
+  rtdb.ref('community/games/gratitude/prompt').set(p);
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function formatTime(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function formatActivityTime(ts){if(!ts)return 'TBD';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+checkSession();
+</script>
+</body>
+</html>
