@@ -364,6 +364,33 @@ a{color:var(--accent1);text-decoration:none;}
 </div>
 
 <script>
+// Gemini: ask Google which Flash models this key can use and pick the newest stable one.
+// Google retires model names over time; this keeps working without code changes.
+var _gemModel=null;
+async function geminiModel(key,forceRefresh){
+  if(_gemModel&&!forceRefresh)return _gemModel;
+  try{if(!forceRefresh){const c=JSON.parse(localStorage.getItem('ebth-gemini-model')||'null');if(c&&c.m&&Date.now()-c.t<864e5)return(_gemModel=c.m);}}catch(e){}
+  let best='gemini-flash-latest';
+  try{
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&key='+encodeURIComponent(key));
+    const j=await r.json();
+    const ok=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
+      .map(m=>m.name.replace(/^models\//,''))
+      .filter(n=>/^gemini-\d+(\.\d+)?-flash$/.test(n));
+    const ver=n=>{const m=n.match(/^gemini-(\d+)(?:\.(\d+))?/);return [+m[1],+(m[2]||0)];};
+    ok.sort((a,b)=>{const x=ver(a),y=ver(b);return (y[0]-x[0])||(y[1]-x[1]);});
+    if(ok.length)best=ok[0];
+  }catch(e){}
+  _gemModel=best;try{localStorage.setItem('ebth-gemini-model',JSON.stringify({m:best,t:Date.now()}));}catch(e){}
+  return best;
+}
+async function geminiFetch(key,body){
+  const call=m=>fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let resp=await call(await geminiModel(key));
+  if(resp.status===404||resp.status===400){const t=await resp.clone().text();if(/no longer available|not found|is not supported/i.test(t))resp=await call(await geminiModel(key,true));}
+  return resp;
+}
+
 // ═══════════════════════════════════════════
 // FIREBASE INIT
 // ═══════════════════════════════════════════
@@ -561,7 +588,7 @@ async function checkMessageSafety(text){
   const key=localStorage.getItem('ebth-gemini-key')||localStorage.getItem('ebth-comm-gemini-key')||'';
   if(!key||text.length<10)return;
   try{
-    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${await geminiModel(key)}:generateContent?key=${key}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:'You are a safety monitor for an online healing community for trauma survivors. Analyze this message ONLY for clear, explicit indicators that the person may be in immediate crisis, considering self-harm, or suicidal. Do NOT flag general expressions of sadness, struggle, healing journeys, or difficult emotions. Only flag messages with explicit crisis language. Message: "'+text.replace(/"/g,"'")+'" Respond with ONLY valid JSON: {"concern":true or false,"level":"low","medium","high"}'}]}],generationConfig:{maxOutputTokens:50}})
     });

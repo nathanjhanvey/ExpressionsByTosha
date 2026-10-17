@@ -210,7 +210,7 @@ section{position:relative;z-index:1;padding:82px 5%;}
 .download-btn:hover{box-shadow:0 4px 15px rgba(0,0,0,.2);opacity:1;}
 /* ORDER STATUS BADGES */
 .status-badge{display:inline-flex;align-items:center;gap:.3rem;border-radius:50px;padding:3px 10px;font-family:var(--font-ui);font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
-.status-received{background:rgba(201,167,212,.2);color:#8b5e9c;}
+.status-received{background:rgba(201,167,212,.2);color:#8b5e9c;}.status-paid{background:rgba(120,190,150,.22);color:#2f7a4f;}
 .status-in-progress{background:rgba(233,196,106,.2);color:#b8860b;}
 .status-ready{background:rgba(168,197,176,.2);color:#3d7a5a;}
 .status-shipped{background:rgba(42,157,143,.2);color:#1a6b61;}
@@ -1127,6 +1127,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
           <div class="settings-sec-title">💳 Payment — CashApp &amp; PayPal</div>
           <div class="sf"><label>CashApp Tag</label><input type="text" id="s-cashapp" placeholder="$YourCashTag"/></div>
           <div class="sf"><label>PayPal.me link or email</label><input type="text" id="s-paypal" placeholder="paypal.me/YourName  or  you@email.com"/></div>
+          <div class="sf"><label>PayPal account email (for automatic payment confirmation)</label><input type="email" id="s-paypal-email" placeholder="the email you log in to PayPal with"/></div>
           <div class="payment-preview" id="paymentPreview"></div>
         </div>
         <!-- SHIPPING -->
@@ -1203,6 +1204,33 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
 </div>
 
 <script>
+// Gemini: ask Google which Flash models this key can use and pick the newest stable one.
+// Google retires model names over time; this keeps working without code changes.
+var _gemModel=null;
+async function geminiModel(key,forceRefresh){
+  if(_gemModel&&!forceRefresh)return _gemModel;
+  try{if(!forceRefresh){const c=JSON.parse(localStorage.getItem('ebth-gemini-model')||'null');if(c&&c.m&&Date.now()-c.t<864e5)return(_gemModel=c.m);}}catch(e){}
+  let best='gemini-flash-latest';
+  try{
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&key='+encodeURIComponent(key));
+    const j=await r.json();
+    const ok=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
+      .map(m=>m.name.replace(/^models\//,''))
+      .filter(n=>/^gemini-\d+(\.\d+)?-flash$/.test(n));
+    const ver=n=>{const m=n.match(/^gemini-(\d+)(?:\.(\d+))?/);return [+m[1],+(m[2]||0)];};
+    ok.sort((a,b)=>{const x=ver(a),y=ver(b);return (y[0]-x[0])||(y[1]-x[1]);});
+    if(ok.length)best=ok[0];
+  }catch(e){}
+  _gemModel=best;try{localStorage.setItem('ebth-gemini-model',JSON.stringify({m:best,t:Date.now()}));}catch(e){}
+  return best;
+}
+async function geminiFetch(key,body){
+  const call=m=>fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let resp=await call(await geminiModel(key));
+  if(resp.status===404||resp.status===400){const t=await resp.clone().text();if(/no longer available|not found|is not supported/i.test(t))resp=await call(await geminiModel(key,true));}
+  return resp;
+}
+
 // ═══════════════════════════════════════════════════════════
 // FIREBASE — AUTO-CONNECTS ON EVERY DEVICE, NO SETUP NEEDED
 // ═══════════════════════════════════════════════════════════
@@ -1220,6 +1248,7 @@ let db=null;
 let rtdb=null;
 // Init Firestore first — this is critical for products, orders, everything
 try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();startListeners();}catch(e){console.error('Firestore init error:',e);}
+var PAY_WORKER='https://ebt-payments.nathanjhanvey.workers.dev';
 var ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3',ADMIN_UIDS=['Ufo3WTLUeMWhjZ3k47FZmhh655A3','pp7qb0DQA1MNtCkILTynsCUTJ8u2'];
 var auth=null,adminListenersOn=false;
 try{auth=firebase.auth();auth.onAuthStateChanged(onAuthChange);}catch(e){console.error('Auth init error:',e);}
@@ -1229,6 +1258,7 @@ try{rtdb=firebase.database();}catch(e){console.error('RTDB init error:',e);}
 // ORDER STATUSES
 const STATUSES=[
   {id:'received',label:'Order Received',icon:'📬',cls:'status-received'},
+  {id:'paid',label:'Paid',icon:'💳',cls:'status-paid'},
   {id:'in-progress',label:'In Progress',icon:'🎨',cls:'status-in-progress'},
   {id:'ready',label:'Ready to Ship',icon:'📦',cls:'status-ready'},
   {id:'shipped',label:'Shipped',icon:'🚚',cls:'status-shipped'},
@@ -1351,7 +1381,7 @@ async function resetAdminPassword(){
 }
 async function signOutAdmin(){await auth.signOut();location.reload();}
 // One-time move of Tosha's settings from her browser into the shared shop settings
-const SHOP_KEYS=['ebth-cashapp','ebth-paypal','ebth-fb','ebth-pinterest','ebth-email','ebth-seo-title','ebth-seo-desc','ebth-ship-enabled','ebth-ship-base','ebth-ship-per-item','ebth-ship-free-over','ebth-tax-enabled','ebth-tax-rate','ebth-wm-enabled','ebth-wm-text','ebth-wm-pos','ebth-wm-opacity','ebth-wm-size','ebth-wm-color'];
+const SHOP_KEYS=['ebth-cashapp','ebth-paypal','ebth-paypal-email','ebth-fb','ebth-pinterest','ebth-email','ebth-seo-title','ebth-seo-desc','ebth-ship-enabled','ebth-ship-base','ebth-ship-per-item','ebth-ship-free-over','ebth-tax-enabled','ebth-tax-rate','ebth-wm-enabled','ebth-wm-text','ebth-wm-pos','ebth-wm-opacity','ebth-wm-size','ebth-wm-color'];
 function shopSettingsFromLocal(){const o={};SHOP_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)o[k]=v;});return o;}
 async function migrateShopSettings(){
   try{const doc=await db.collection('settings').doc('shop').get();
@@ -1551,13 +1581,21 @@ function goToPayment(e){
     isGift,giftName:isGift?document.getElementById('co-gift-name').value:'',
     giftAddr:isGift?`${document.getElementById('co-gift-addr').value}, ${document.getElementById('co-gift-city').value}, ${document.getElementById('co-gift-state-zip').value}`:'',
     giftMsg:isGift?document.getElementById('co-gift-msg').value:'',
-    items:cart.map(i=>({title:i.title,qty:i.qty,price:i.price,opts:i.opts||{},isDigital:i.isDigital,downloadUrl:i.downloadUrl||''})),
+    items:cart.map(i=>({pid:i.id||'',title:i.title,qty:i.qty,price:i.price,opts:i.opts||{},isDigital:!!i.isDigital})),
     itemsSummary:optsSummary,subtotal:sub.toFixed(2),shipping:ship.toFixed(2),tax:tax.toFixed(2),total:total.toFixed(2),
     hasDigital:cart.some(i=>i.isDigital),status:'received',paymentMethod:'Pending'
   };
   renderPaymentMethods(total);showCoPage(2);
 }
 function backToInfo(){showCoPage(1);}
+window.addEventListener('load',()=>{try{const id=new URLSearchParams(location.search).get('paid');if(!id)return;history.replaceState(null,'',location.pathname);const inp=document.getElementById('lookupInput');if(inp){inp.value=id;inp.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(lookupOrder,2500);}}catch(e){}});
+function paypalCheckoutUrl(email,total,orderId){
+  const base=location.href.split('#')[0].split('?')[0];
+  const q=new URLSearchParams({cmd:'_xclick',business:email,item_name:'Expressions by Tosha order '+orderId,amount:total.toFixed(2),
+    currency_code:'USD',invoice:orderId,custom:orderId,no_shipping:'1',charset:'utf-8',
+    notify_url:PAY_WORKER.replace(/\/$/,'')+'/paypal/ipn',return:base+'?paid='+encodeURIComponent(orderId),cancel_return:base});
+  return 'https://www.paypal.com/cgi-bin/webscr?'+q.toString();
+}
 function renderPaymentMethods(total){
   const cashapp=localStorage.getItem('ebth-cashapp')||'';
   const paypal=localStorage.getItem('ebth-paypal')||'';
@@ -1565,7 +1603,8 @@ function renderPaymentMethods(total){
   if(!cashapp&&!paypal){el.innerHTML=`<div style="background:var(--bg2);border-radius:10px;padding:1rem;font-family:var(--font-ui);font-size:.78rem;color:var(--text-mid);text-align:center;">No payment methods set yet. Tosha will contact you.</div><button class="btn btn-primary" style="width:100%;margin-top:.75rem;" onclick="placeOrder('Manual','')">Place Order — Tosha will contact you</button>`;return;}
   let html='';
   if(cashapp){const tag=cashapp.startsWith('$')?cashapp:'$'+cashapp;const url=`https://cash.app/${tag.replace('$','').replace(/[^a-zA-Z0-9_-]/g,'')}/${total.toFixed(2)}`;html+=`<div class="payment-method-card" onclick="placeOrder('CashApp','${url}')"><div class="pmc-head"><span class="pmc-icon">💚</span><span class="pmc-name">Pay with CashApp</span></div><div class="pmc-desc">Fast and easy</div><div class="pmc-handle">${esc(tag)}</div></div>`;}
-  if(paypal){let url=paypal.includes('paypal')?paypal:`https://paypal.me/${encodeURIComponent(paypal)}/${total.toFixed(2)}`;if(!url.startsWith('http'))url='https://'+url;html+=`<div class="payment-method-card" onclick="placeOrder('PayPal','${url}')"><div class="pmc-head"><span class="pmc-icon">🔵</span><span class="pmc-name">Pay with PayPal</span></div><div class="pmc-desc">Secure · Credit/debit cards accepted</div><div class="pmc-handle">${esc(paypal.replace(/https?:\/\//,''))}</div></div>`;}
+  const ppEmail=localStorage.getItem('ebth-paypal-email')||'';
+  if(paypal||(ppEmail&&PAY_WORKER)){let url;if(ppEmail&&PAY_WORKER&&pendingOrder){url=paypalCheckoutUrl(ppEmail,total,pendingOrder.id);}else{url=paypal.includes('paypal')?paypal:`https://paypal.me/${encodeURIComponent(paypal)}/${total.toFixed(2)}`;if(!url.startsWith('http'))url='https://'+url;}html+=`<div class="payment-method-card" onclick="placeOrder('PayPal','${url}')"><div class="pmc-head"><span class="pmc-icon">🔵</span><span class="pmc-name">Pay with PayPal</span></div><div class="pmc-desc">Secure · Credit/debit cards accepted</div><div class="pmc-handle">${esc(paypal.replace(/https?:\/\//,''))}</div></div>`;}
   el.innerHTML=html;
 }
 async function placeOrder(method,url){
@@ -1573,11 +1612,11 @@ async function placeOrder(method,url){
   pendingOrder.paymentMethod=method;
   const orderToSave={...pendingOrder,createdAt:firebase.firestore.FieldValue.serverTimestamp(),archived:false};
   if(db){await db.collection('orders').doc(orderToSave.id).set(orderToSave);await db.collection('order-status').doc(orderToSave.id).set(statusCard(orderToSave));}
-  const digitalItems=pendingOrder.items.filter(i=>i.isDigital&&i.downloadUrl);
+  const hasDigitalItems=pendingOrder.items.some(i=>i.isDigital);
   cart=[];saveCart();renderCart();closeModal('checkoutModal');
   document.getElementById('confirmOrderId').textContent=pendingOrder.id;
   document.getElementById('confirmMsg').textContent=method==='Manual'?'Tosha will contact you to arrange payment and prepare your order. You\'re amazing. 💜':`Your payment is being processed via ${method}. Once confirmed, Tosha will prepare your order. You\'re amazing. 💜`;
-  document.getElementById('confirmDownloads').innerHTML=digitalItems.length?`<div class="download-section"><h4>📥 Your Downloads</h4><p>Save these files somewhere safe!</p>${digitalItems.map(i=>`<a href="${esc(i.downloadUrl)}" class="download-btn" target="_blank">⬇ Download: ${esc(i.title)}</a>`).join('')}</div>`:'';
+  document.getElementById('confirmDownloads').innerHTML=hasDigitalItems?`<div class="download-section"><h4>📥 Your Downloads</h4><p>Your download links appear as soon as payment is confirmed. Save your order number <b>${esc(pendingOrder.id)}</b> and look it up under <b>Track Your Order</b>.</p></div>`:'';
   openModal('confirmModal');
   if(url&&method!=='Manual')setTimeout(()=>window.open(url,'_blank'),600);
 }
@@ -1599,6 +1638,9 @@ async function lookupOrder(){
   document.getElementById('lrStatus').innerHTML=`<span class="status-badge ${st.cls}">${st.icon} ${st.label}</span>`;
   document.getElementById('lrItems').textContent='Items: '+(found.itemsSummary||found.items?.map(i=>i.title).join(', ')||'');
   document.getElementById('lrNote').textContent=found.notes?'Note: '+found.notes:'';
+  const dl=Array.isArray(found.downloads)?found.downloads:[];
+  let dlEl=document.getElementById('lrDownloads');if(!dlEl){dlEl=document.createElement('div');dlEl.id='lrDownloads';document.getElementById('lrNote').after(dlEl);}
+  dlEl.innerHTML=dl.length?`<div class="download-section"><h4>📥 Your Downloads</h4>${dl.map(d=>`<a href="${esc(d.url)}" class="download-btn" target="_blank" rel="noopener">⬇ Download: ${esc(d.title||'File')}</a>`).join('')}</div>`:'';
   resultEl.style.display='block';
 }
 
@@ -1749,7 +1791,7 @@ function renderOrdersList(){
       <div class="or-head"><span class="or-num">${o.id||'?'}</span><span class="or-date">${o.date||''}</span></div>
       <div class="or-row2"><span class="or-customer">📦 ${esc(o.customer||'')} · ${esc(o.email||'')}${o.phone&&o.phone!=='Not provided'?' · '+esc(o.phone):''}</span><span class="or-amount">${o.total==='Commission'?'Commission':('$'+(o.total||'0'))}</span></div>
       <div class="or-tags"><span class="or-tag">${esc(o.paymentMethod||'')}</span>${o.isGift?'<span class="or-tag gift">🎁 Gift</span>':''}${o.hasDigital?'<span class="or-tag digital">📥 Digital</span>':''}${isCommission?'<span class="or-tag" style="background:rgba(201,167,212,.3);color:var(--accent1);">Commission</span>':''}</div>
-      <div class="or-detail">${o.address&&o.address!=='Digital Only'?`📍 ${esc(o.address)}<br/>`:''}${o.itemsSummary?`🛒 ${esc(o.itemsSummary)}<br/>`:''}${o.options&&isCommission?`Options: ${esc(o.options)}<br/>`:''}${o.artwork&&o.artwork!=='None selected'?`🎨 Artwork: ${esc(o.artwork)}<br/>`:''}${o.desc?`📝 "${esc(o.desc.slice(0,120))}${o.desc.length>120?'…':''}"`:''}${o.isGift&&o.giftName?`<br/>🎁 For: ${esc(o.giftName)} @ ${esc(o.giftAddr)}`:''}${o.giftMsg?`<br/>💌 "${esc(o.giftMsg)}"`:''}${o.notes?`<br/>Note: ${esc(o.notes)}`:''}
+      <div class="or-detail">${o.paymentNote?`💳 ${esc(o.paymentNote)}<br/>`:''}${o.address&&o.address!=='Digital Only'?`📍 ${esc(o.address)}<br/>`:''}${o.itemsSummary?`🛒 ${esc(o.itemsSummary)}<br/>`:''}${o.options&&isCommission?`Options: ${esc(o.options)}<br/>`:''}${o.artwork&&o.artwork!=='None selected'?`🎨 Artwork: ${esc(o.artwork)}<br/>`:''}${o.desc?`📝 "${esc(o.desc.slice(0,120))}${o.desc.length>120?'…':''}"`:''}${o.isGift&&o.giftName?`<br/>🎁 For: ${esc(o.giftName)} @ ${esc(o.giftAddr)}`:''}${o.giftMsg?`<br/>💌 "${esc(o.giftMsg)}"`:''}${o.notes?`<br/>Note: ${esc(o.notes)}`:''}
       </div>
       <div class="or-status-row"><span class="status-badge ${st.cls}">${st.icon} ${st.label}</span>${opts}${archBtn}</div>
     </div>`;
@@ -1794,7 +1836,7 @@ function editProduct(id){
   document.getElementById('pfTitle').textContent='Edit Product';
   document.getElementById('pf-title').value=p.title;document.getElementById('pf-price').value=p.price;
   document.getElementById('pf-stock').value=p.stock||'available';document.getElementById('pf-desc').value=p.desc||'';
-  document.getElementById('pf-digital').checked=p.isDigital||false;document.getElementById('pf-download-url').value=p.downloadUrl||'';
+  document.getElementById('pf-digital').checked=p.isDigital||false;document.getElementById('pf-download-url').value=p.downloadUrl||'';if(db&&p._id)db.collection('product-files').doc(p._id).get().then(d=>{if(d.exists)document.getElementById('pf-download-url').value=d.data().url||'';}).catch(()=>{});
   document.getElementById('digitalUrlField').style.display=p.isDigital?'block':'none';
   const ft=document.getElementById('pf-from-tosha');if(ft)ft.value=p.fromTosha||'';
   setFeelingTags(p.feelingTags||[]);
@@ -1813,9 +1855,11 @@ async function saveProduct(){
   const title=document.getElementById('pf-title').value.trim();const price=document.getElementById('pf-price').value;
   if(!title||!price){alert('Please enter a title and price.');return;}
   const cat=document.getElementById('pf-cat').value;const isDigital=document.getElementById('pf-digital').checked;
-  const prod={title,category:cat,price,stock:document.getElementById('pf-stock').value,desc:document.getElementById('pf-desc').value.trim(),fromTosha:document.getElementById('pf-from-tosha').value.trim(),img:currentImg,isDigital,downloadUrl:isDigital?document.getElementById('pf-download-url').value.trim():'',options:getOptGroups(),feelingTags:getFeelingTags(),active:true};
+  const prod={title,category:cat,price,stock:document.getElementById('pf-stock').value,desc:document.getElementById('pf-desc').value.trim(),fromTosha:document.getElementById('pf-from-tosha').value.trim(),img:currentImg,isDigital,downloadUrl:'',options:getOptGroups(),feelingTags:getFeelingTags(),active:true};
+  const dlUrl=isDigital?document.getElementById('pf-download-url').value.trim():'';let pid=editingId;
   if(editingId){if(db)await db.collection('products').doc(editingId).set({...products.find(x=>x._id===editingId),...prod,_id:undefined},{merge:true});}
-  else{prod.views=0;if(db)await db.collection('products').add(prod);}
+  else{prod.views=0;if(db){const ref=await db.collection('products').add(prod);pid=ref.id;}}
+  if(db&&pid){if(dlUrl)await db.collection('product-files').doc(pid).set({url:dlUrl});else if(!isDigital)await db.collection('product-files').doc(pid).delete().catch(()=>{});}
   if(!categories.includes(cat)){categories.push(cat);await dbSet('settings','categories',{list:categories});updateCommissionCatList();}
   cancelProdForm();
 }
@@ -1870,7 +1914,7 @@ async function sendAiMessage(){
   const context=buildAiContext();
   const fullPrompt=`You are a helpful AI assistant for Tosha Hanvey, a survivor and artist who runs "Expressions by Tosha Hanvey," a healing art business. You know about her mission (affirmation art for people with anxiety, depression, and trauma), her products, and her business data. Be warm, encouraging, and practical. Keep responses concise but helpful.\n\nBusiness Context:\n${context}\n\nConversation history:\n${aiHistory.slice(-6).map(h=>`${h.role}: ${h.content}`).join('\n')}\n\nUser: ${msg}`;
   try{
-    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${await geminiModel(key)}:generateContent?key=${key}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:fullPrompt}]}],generationConfig:{maxOutputTokens:600}})
     });
@@ -1934,7 +1978,7 @@ function renderPortrait(data){const f=document.getElementById('portraitFrame');i
 
 // SETTINGS
 function loadSettings(){
-  const pairs={cashapp:'ebth-cashapp',paypal:'ebth-paypal',fb:'ebth-fb',pinterest:'ebth-pinterest',email:'ebth-email','seo-title':'ebth-seo-title','seo-desc':'ebth-seo-desc',gemini:'ebth-gemini-key'};
+  const pairs={cashapp:'ebth-cashapp',paypal:'ebth-paypal','paypal-email':'ebth-paypal-email',fb:'ebth-fb',pinterest:'ebth-pinterest',email:'ebth-email','seo-title':'ebth-seo-title','seo-desc':'ebth-seo-desc',gemini:'ebth-gemini-key'};
   Object.entries(pairs).forEach(([elKey,lsKey])=>{const el=document.getElementById('s-'+elKey);if(el)el.value=localStorage.getItem(lsKey)||'';});
   const shipEn=document.getElementById('s-ship-enabled');if(shipEn)shipEn.checked=localStorage.getItem('ebth-ship-enabled')==='true';
   ['ship-base','ship-per-item','ship-free-over'].forEach(k=>{const el=document.getElementById('s-'+k);if(el)el.value=localStorage.getItem('ebth-'+k)||'';});
@@ -1955,7 +1999,7 @@ function updateSeoPreview(){const title=document.getElementById('s-seo-title')?.
 function renderPaymentPreview(){const ca=document.getElementById('s-cashapp')?.value||localStorage.getItem('ebth-cashapp')||'';const pp=document.getElementById('s-paypal')?.value||localStorage.getItem('ebth-paypal')||'';const el=document.getElementById('paymentPreview');if(!el)return;if(!ca&&!pp){el.innerHTML='<div class="pp-card" style="opacity:.5;">No payment methods yet.</div>';return;}el.innerHTML=(ca?`<div class="pp-card">💚 CashApp: <strong>${esc(ca.startsWith('$')?ca:'$'+ca)}</strong></div>`:'')+(pp?`<div class="pp-card">🔵 PayPal: <strong>${esc(pp)}</strong></div>`:'');}
 async function saveSettings(){
   // save simple settings to localStorage
-  const pairs={cashapp:'ebth-cashapp',paypal:'ebth-paypal',fb:'ebth-fb',pinterest:'ebth-pinterest',email:'ebth-email','seo-title':'ebth-seo-title','seo-desc':'ebth-seo-desc',gemini:'ebth-gemini-key'};
+  const pairs={cashapp:'ebth-cashapp',paypal:'ebth-paypal','paypal-email':'ebth-paypal-email',fb:'ebth-fb',pinterest:'ebth-pinterest',email:'ebth-email','seo-title':'ebth-seo-title','seo-desc':'ebth-seo-desc',gemini:'ebth-gemini-key'};
   Object.entries(pairs).forEach(([elKey,lsKey])=>{const el=document.getElementById('s-'+elKey);if(el&&el.value.trim())localStorage.setItem(lsKey,el.value.trim());});
   const shipEn=document.getElementById('s-ship-enabled');if(shipEn)localStorage.setItem('ebth-ship-enabled',shipEn.checked?'true':'false');
   ['ship-base','ship-per-item','ship-free-over'].forEach(k=>{const el=document.getElementById('s-'+k);if(el)localStorage.setItem('ebth-'+k,el.value||'0');});
@@ -2010,7 +2054,7 @@ function loadMembers(){const el=document.getElementById('memberList');if(!el)ret
 async function removeMember(uid){if(!confirm('Remove this member? They will no longer be able to enter.'))return;await rtdb.ref('community/members/'+uid).remove();loadMembers();}
 function revokeCode(code){if(!confirm('Revoke code '+code+'?'))return;rtdb.ref('community/invites/'+code+'/used').set(true).then(loadInviteCodes);}
 function fillActivityDefaults(){const type=document.getElementById('act-type')?.value||'';const defaults={'Gratitude Circle':'What is one thing, big or small, that you are grateful for today?','Affirmation Chain':'Share an affirmation that has helped you. We\'ll build on each other\'s words.','Three Good Things':'Share three good things that happened today — tiny things count.','Daily Check-In':'How are you feeling today? Use a color, an emoji, or just one word.','What Would You Tell Your Younger Self?':'What do you wish someone had told you when you were going through the hardest time?','Intention Setting':'What is one gentle intention you\'re carrying into today?'};const titleDefaults={'Gratitude Circle':'Sunday Gratitude Circle','Affirmation Chain':'Affirmation Chain','Three Good Things':'Three Good Things','Daily Check-In':'Daily Check-In','What Would You Tell Your Younger Self?':'Letter to Our Younger Selves','Intention Setting':'Morning Intentions'};const pt=document.getElementById('act-prompt');const tt=document.getElementById('act-title');if(pt)pt.value=defaults[type]||'';if(tt)tt.value=titleDefaults[type]||type;}
-async function getGeminiActivityPrompt(){const key=localStorage.getItem('ebth-gemini-key')||'';const type=document.getElementById('act-type')?.value||'';const resultEl=document.getElementById('actScheduleResult');if(!resultEl)return;if(!key){resultEl.textContent='Add your Gemini API key in Settings → AI.';return;}resultEl.textContent='🤖 Asking Gemini...';try{const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Create a warm, gentle, encouraging opening prompt for a '+type+' therapeutic community activity for trauma/abuse survivors. It should feel safe and non-pressuring. 1-2 sentences. Return only the prompt.'}]}]})});const data=await resp.json();if(data.error){resultEl.textContent='AI error: '+data.error.message;return;}const p=data.candidates?.[0]?.content?.parts?.[0]?.text||'';const el=document.getElementById('act-prompt');if(el)el.value=p.trim();resultEl.textContent='✓ Prompt ready! Edit it if you like.';}catch(e){resultEl.textContent='Error: '+e.message;}}
+async function getGeminiActivityPrompt(){const key=localStorage.getItem('ebth-gemini-key')||'';const type=document.getElementById('act-type')?.value||'';const resultEl=document.getElementById('actScheduleResult');if(!resultEl)return;if(!key){resultEl.textContent='Add your Gemini API key in Settings → AI.';return;}resultEl.textContent='🤖 Asking Gemini...';try{const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${await geminiModel(key)}:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Create a warm, gentle, encouraging opening prompt for a '+type+' therapeutic community activity for trauma/abuse survivors. It should feel safe and non-pressuring. 1-2 sentences. Return only the prompt.'}]}]})});const data=await resp.json();if(data.error){resultEl.textContent='AI error: '+data.error.message;return;}const p=data.candidates?.[0]?.content?.parts?.[0]?.text||'';const el=document.getElementById('act-prompt');if(el)el.value=p.trim();resultEl.textContent='✓ Prompt ready! Edit it if you like.';}catch(e){resultEl.textContent='Error: '+e.message;}}
 async function saveScheduledActivity(){const type=document.getElementById('act-type')?.value;const title=document.getElementById('act-title')?.value.trim();const prompt=document.getElementById('act-prompt')?.value.trim();const dt=document.getElementById('act-datetime')?.value;const resultEl=document.getElementById('actScheduleResult');if(!title||!prompt){if(resultEl)resultEl.textContent='Please fill in title and prompt.';return;}await db.collection('community-activities').add({type,title,prompt,scheduledFor:dt?firebase.firestore.Timestamp.fromDate(new Date(dt)):firebase.firestore.Timestamp.now(),status:'scheduled',createdAt:firebase.firestore.FieldValue.serverTimestamp()});if(resultEl){resultEl.style.color='var(--accent3)';resultEl.textContent='✓ Activity scheduled!';setTimeout(()=>resultEl.textContent='',4000);}const ti=document.getElementById('act-title');const pr=document.getElementById('act-prompt');const dti=document.getElementById('act-datetime');if(ti)ti.value='';if(pr)pr.value='';if(dti)dti.value='';}
 function loadCommunityMessages(){const el=document.getElementById('communityMsgList');if(!el)return;el.innerHTML='<div class="no-data">Loading...</div>';const rooms=['general','healing','checkin'];const allMsgs=[];let done=0;if(!rtdb){el.innerHTML='<div class="no-data">Realtime Database connecting...</div>';return;}const roomLabels={general:'💬 General',healing:'💜 Healing',checkin:'🌅 Check-In'};rooms.forEach(room=>{rtdb.ref('community/messages/'+room).limitToLast(10).get().then(snap=>{snap.forEach(child=>{allMsgs.push({room,id:child.key,...child.val()});});done++;if(done===rooms.length){allMsgs.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));if(!allMsgs.length){el.innerHTML='<div class="no-data">No messages yet.</div>';return;}el.innerHTML=allMsgs.slice(0,30).map(m=>`<div style="padding:.42rem .65rem;background:var(--bg2);border-radius:8px;border:1px solid var(--border);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.12rem;"><span style="font-size:.66rem;color:var(--accent1);font-weight:500;">${esc(m.author)} <span style="color:var(--text-light);font-weight:400;">in ${roomLabels[m.room]||m.room}</span></span><button class="icon-btn del" style="font-size:.63rem;" onclick="deleteCommunityMsg('${m.room}','${m.id}',this)">🗑</button></div><div style="font-size:.78rem;color:var(--text-dark);">${esc(m.text||'[deleted]')}</div></div>`).join('');}});});}
 function deleteCommunityMsg(room,id,btn){if(!confirm('Delete this message?'))return;rtdb.ref('community/messages/'+room+'/'+id).update({deleted:true,text:''}).then(()=>{if(btn)btn.closest('div').style.opacity='.4';});}
