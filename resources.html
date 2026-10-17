@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Support Resources | Expressions by Tosha Hanvey</title>
+<meta name="description" content="Free, confidential mental health and crisis support resources available 24/7 anywhere in the United States."/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fdf8f5;--bg2:#f5eef8;--surface:#fffbfe;--accent1:#c9a7d4;--accent2:#e8b4c0;--accent3:#a8c5b0;--text-dark:#3d2f45;--text-mid:#6e5878;--text-light:#9e8faa;--border:#e8dff0;--font-head:'Playfair Display',serif;--font-ui:'Jost',sans-serif;}
+body.theme-empower{--bg:#1a0e2e;--bg2:#251540;--surface:#1f1235;--accent1:#c9a227;--accent2:#e8c76a;--accent3:#8b5cf6;--text-dark:#f5f0ff;--text-mid:#d4c5f0;--text-light:#9980cc;--border:#3d2860;}
+body.theme-warmth{--bg:#fdf5ee;--bg2:#f5ede0;--surface:#fffbf7;--accent1:#c17d5a;--accent2:#8faa78;--accent3:#d4a96a;--text-dark:#3b2515;--text-mid:#7a4f30;--text-light:#a88060;--border:#e8d5c0;}
+body.theme-clarity{--bg:#f8f9fa;--bg2:#e8f4f4;--surface:#fff;--accent1:#2a9d8f;--accent2:#e9c46a;--accent3:#264653;--text-dark:#1a2e2e;--text-mid:#3d6060;--text-light:#7a9a9a;--border:#d0e8e8;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text-dark);font-family:var(--font-ui);font-size:16px;line-height:1.7;}
+a{color:var(--accent1);text-decoration:none;}
+a:hover{opacity:.75;}
+.blob-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+.blob{position:absolute;border-radius:60% 40% 55% 45%/45% 55% 40% 60%;opacity:.15;filter:blur(60px);animation:blobFloat 18s ease-in-out infinite;}
+.blob-1{width:500px;height:500px;background:var(--accent1);top:-100px;left:-100px;}
+.blob-2{width:400px;height:400px;background:var(--accent2);top:40%;right:-80px;animation-delay:6s;}
+.blob-3{width:350px;height:350px;background:var(--accent3);bottom:-80px;left:30%;animation-delay:12s;}
+@keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-30px) scale(1.05);}66%{transform:translate(-15px,20px) scale(.97);}}
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(253,248,245,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 5%;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:var(--font-head);font-size:.95rem;font-weight:600;color:var(--text-dark);}
+.nav-logo span{font-family:var(--font-ui);font-size:.62rem;color:var(--text-light);display:block;letter-spacing:.06em;text-transform:uppercase;}
+.nav-back{font-family:var(--font-ui);font-size:.74rem;color:var(--text-mid);display:flex;align-items:center;gap:.35rem;}
+.nav-back:hover{color:var(--accent1);}
+/* HERO */
+.hero{position:relative;z-index:1;background:linear-gradient(135deg,var(--bg2),var(--bg));padding:60px 5% 50px;text-align:center;}
+.hero-label{font-family:var(--font-ui);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent1);margin-bottom:.8rem;}
+.hero-title{font-family:var(--font-head);font-size:clamp(1.8rem,5vw,3rem);font-weight:600;color:var(--text-dark);line-height:1.2;margin-bottom:.8rem;}
+.hero-title em{font-style:italic;color:var(--accent1);}
+.hero-sub{font-family:var(--font-ui);font-size:.9rem;color:var(--text-mid);max-width:560px;margin:0 auto 1.5rem;line-height:1.6;}
+/* EMERGENCY BANNER */
+.emergency-banner{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;border-radius:16px;padding:1.4rem 1.8rem;margin:0 5% 2rem;position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:1.2rem;flex-wrap:wrap;}
+.eb-text{font-family:var(--font-ui);}
+.eb-title{font-size:.9rem;font-weight:600;margin-bottom:.3rem;}
+.eb-detail{font-size:.78rem;opacity:.88;line-height:1.5;}
+.eb-numbers{display:flex;gap:1rem;flex-wrap:wrap;}
+.eb-num{background:rgba(255,255,255,.22);border-radius:9px;padding:.6rem 1rem;text-align:center;}
+.eb-num-val{font-size:1.2rem;font-weight:700;display:block;}
+.eb-num-lbl{font-size:.65rem;opacity:.85;}
+/* MAIN */
+main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:0 5% 4rem;}
+.section-label{font-family:var(--font-ui);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent1);margin-bottom:.6rem;}
+.section-title{font-family:var(--font-head);font-size:1.5rem;font-weight:600;color:var(--text-dark);margin-bottom:1rem;}
+.section-title em{font-style:italic;color:var(--accent1);}
+.resources-section{margin-bottom:2.5rem;}
+.resources-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.resource-card{background:var(--surface);border-radius:14px;padding:1.3rem;border:1px solid var(--border);box-shadow:0 3px 20px rgba(140,100,160,.07);transition:transform .2s,box-shadow .2s;}
+.resource-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(140,100,160,.12);}
+.rc-header{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.7rem;}
+.rc-icon{font-size:1.6rem;flex-shrink:0;margin-top:.1rem;}
+.rc-title{font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--text-dark);line-height:1.2;}
+.rc-available{font-family:var(--font-ui);font-size:.62rem;color:var(--accent3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:.18rem;}
+.rc-desc{font-family:var(--font-ui);font-size:.78rem;color:var(--text-mid);margin-bottom:.9rem;line-height:1.55;}
+.rc-contacts{display:flex;flex-direction:column;gap:.35rem;}
+.rc-contact{display:flex;align-items:center;gap:.5rem;font-family:var(--font-ui);font-size:.76rem;}
+.rc-contact-type{color:var(--text-light);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;min-width:38px;}
+.rc-contact-val{color:var(--text-dark);font-weight:500;}
+.rc-contact-val a{color:var(--accent1);}
+.rc-tag{display:inline-block;background:var(--bg2);border-radius:50px;padding:2px 10px;font-family:var(--font-ui);font-size:.62rem;color:var(--text-mid);margin-top:.7rem;border:1px solid var(--border);}
+/* IMPORTANT NOTE */
+.important-note{background:var(--bg2);border-radius:14px;padding:1.4rem 1.6rem;border:1px solid var(--border);margin-bottom:2.5rem;}
+.in-title{font-family:var(--font-head);font-size:1rem;color:var(--text-dark);margin-bottom:.5rem;}
+.in-text{font-family:var(--font-ui);font-size:.8rem;color:var(--text-mid);line-height:1.65;}
+/* SELF CARE */
+.selfcare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.85rem;}
+.selfcare-card{background:var(--surface);border-radius:12px;padding:1.1rem;border:1px solid var(--border);text-align:center;}
+.sc-icon{font-size:1.8rem;margin-bottom:.6rem;}
+.sc-title{font-family:var(--font-head);font-size:.95rem;color:var(--text-dark);margin-bottom:.4rem;}
+.sc-text{font-family:var(--font-ui);font-size:.76rem;color:var(--text-mid);line-height:1.5;}
+/* FOOTER */
+.res-footer{text-align:center;padding:2rem 5%;border-top:1px solid var(--border);margin-top:2rem;}
+.res-footer-logo{font-family:var(--font-head);font-size:1.1rem;color:var(--text-dark);margin-bottom:.3rem;}
+.res-footer-tag{font-family:var(--font-ui);font-style:italic;font-size:.8rem;color:var(--text-light);margin-bottom:1rem;}
+.res-footer-links{display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;font-family:var(--font-ui);font-size:.72rem;}
+.res-footer-links a{color:var(--text-light);}
+.res-footer-links a:hover{color:var(--accent1);opacity:1;}
+.disclaimer{font-family:var(--font-ui);font-size:.68rem;color:var(--text-light);max-width:600px;margin:1.2rem auto 0;line-height:1.6;}
+@media(max-width:640px){
+  .emergency-banner{flex-direction:column;}
+  .resources-grid{grid-template-columns:1fr;}
+  .selfcare-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="blob-bg"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+
+<nav>
+  <div class="nav-logo">Expressions by Tosha Hanvey<span>Support Resources</span></div>
+  <a href="index.html" class="nav-back">← Back to the site</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">You Are Not Alone</div>
+  <h1 class="hero-title">Free, Confidential <em>Support</em></h1>
+  <p class="hero-sub">Every resource on this page is free, confidential, and available right now — wherever you are in the United States. You deserve support. Reaching out is an act of strength.</p>
+</div>
+
+<!-- EMERGENCY BANNER -->
+<div class="emergency-banner">
+  <div class="eb-text">
+    <div class="eb-title">🆘 If you are in immediate danger, please call 911.</div>
+    <div class="eb-detail">For emotional crisis support right now — without judgment, at no cost:</div>
+  </div>
+  <div class="eb-numbers">
+    <div class="eb-num"><span class="eb-num-val">988</span><span class="eb-num-lbl">Call or Text<br/>Crisis Lifeline</span></div>
+    <div class="eb-num"><span class="eb-num-val">741741</span><span class="eb-num-lbl">Text HOME<br/>Crisis Text Line</span></div>
+    <div class="eb-num"><span class="eb-num-val">911</span><span class="eb-num-lbl">Immediate<br/>Danger</span></div>
+  </div>
+</div>
+
+<main>
+  <!-- IMPORTANT NOTE -->
+  <div class="important-note">
+    <div class="in-title">💜 A note from Tosha</div>
+    <p class="in-text">I built this page because I know what it feels like to need help and not know where to turn. Every single resource here is free. None of them will judge you. You don't have to be in a full crisis to reach out — feeling alone, scared, overwhelmed, or just like you need someone to talk to is more than enough of a reason to call. I'm proud of you for being here.</p>
+  </div>
+
+  <!-- CRISIS & SUICIDE PREVENTION -->
+  <div class="resources-section">
+    <div class="section-label">Crisis &amp; Suicide Prevention</div>
+    <h2 class="section-title">When you need <em>immediate support</em></h2>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">📞</span><div><div class="rc-title">988 Suicide &amp; Crisis Lifeline</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">The national crisis lifeline for anyone experiencing suicidal thoughts, emotional distress, or a mental health crisis. Trained counselors answer every call and text. Available in English and Spanish. TTY option available for Deaf/HoH.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call/Text</span><span class="rc-contact-val">988</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://988lifeline.org" target="_blank">988lifeline.org</a></span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Veterans</span><span class="rc-contact-val">988, then press 1</span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">💬</span><div><div class="rc-title">Crisis Text Line</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">If you can't or don't want to call, text is available. Real crisis counselors — not bots — respond to every text. For any crisis: anxiety, depression, trauma, abuse, suicidal thoughts, relationship issues.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Text</span><span class="rc-contact-val">HOME to 741741</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.crisistextline.org" target="_blank">crisistextline.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🎖️</span><div><div class="rc-title">Veterans Crisis Line</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">Confidential support for Veterans, Service Members, and their families. Staffed by caring, qualified responders — many of whom are Veterans themselves.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">988, then press 1</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Text</span><span class="rc-contact-val">838255</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.veteranscrisisline.net" target="_blank">veteranscrisisline.net</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Veterans &amp; Families</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🌈</span><div><div class="rc-title">The Trevor Project</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">Crisis intervention and suicide prevention for LGBTQ+ young people under 25. Judgment-free, affirming support for anyone struggling with identity, mental health, or crisis.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-866-488-7386</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Text</span><span class="rc-contact-val">START to 678-678</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.thetrevorproject.org" target="_blank">thetrevorproject.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · LGBTQ+ Youth</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DOMESTIC VIOLENCE & ABUSE -->
+  <div class="resources-section">
+    <div class="section-label">Domestic Violence &amp; Abuse</div>
+    <h2 class="section-title">For survivors of <em>abuse</em></h2>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🏠</span><div><div class="rc-title">National Domestic Violence Hotline</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">Support, safety planning, and local shelter resources for anyone experiencing domestic violence — physical, emotional, sexual, financial, or any other form. Available in more than 200 languages.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-800-799-7233</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">TTY</span><span class="rc-contact-val">1-800-787-3224</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Text</span><span class="rc-contact-val">START to 88788</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.thehotline.org" target="_blank">thehotline.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">💜</span><div><div class="rc-title">RAINN — Sexual Assault Hotline</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">The nation's largest anti-sexual violence organization. Connects survivors with local service providers for counseling, advocacy, and support. Also supports friends and family of survivors.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-800-656-4673</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.rainn.org" target="_blank">rainn.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">👨</span><div><div class="rc-title">National Domestic Violence Hotline — Men</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">Domestic violence affects people of all genders. The same number serves everyone — no judgment. If you prefer male-specific resources, 1-in-6.org provides specialized support for male survivors of sexual abuse.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-800-799-7233</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://1in6.org" target="_blank">1in6.org</a> (male survivors)</span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🔗</span><div><div class="rc-title">Loveisrespect</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">Specialized support for teens and young adults experiencing relationship abuse — dating violence, coercion, unhealthy relationship patterns. Staffed by highly trained advocates.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-866-331-9474</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Text</span><span class="rc-contact-val">LOVEIS to 22522</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.loveisrespect.org" target="_blank">loveisrespect.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Teens &amp; Young Adults</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MENTAL HEALTH -->
+  <div class="resources-section">
+    <div class="section-label">Mental Health</div>
+    <h2 class="section-title">Ongoing <em>mental health</em> support</h2>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🧠</span><div><div class="rc-title">SAMHSA National Helpline</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">The Substance Abuse and Mental Health Services Administration's free information service. Provides referrals to local treatment facilities, support groups, and community organizations for mental health and substance use.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-800-662-4357</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">TTY</span><span class="rc-contact-val">1-800-487-4889</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.samhsa.gov" target="_blank">samhsa.gov</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🤝</span><div><div class="rc-title">NAMI Helpline</div><div class="rc-available">Mon–Fri 10am–10pm ET · Free</div></div></div>
+        <p class="rc-desc">The National Alliance on Mental Illness helpline offers information, referrals, and support to individuals with mental illness and their families. Also connects you to local NAMI affiliates for support groups.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-800-950-6264</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Text</span><span class="rc-contact-val">NAMI to 741741</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Chat</span><span class="rc-contact-val"><a href="https://www.nami.org" target="_blank">nami.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🌱</span><div><div class="rc-title">Open Path Collective</div><div class="rc-available">Affordable Therapy · Nationwide</div></div></div>
+        <p class="rc-desc">Connects clients with therapists who offer sessions for $30-80 for individuals and couples — for those who need professional help but can't afford standard therapy rates. One-time $65 membership fee.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://openpathcollective.org" target="_blank">openpathcollective.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Affordable Therapy</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">💻</span><div><div class="rc-title">Psychology Today Therapist Finder</div><div class="rc-available">Find Local Therapists</div></div></div>
+        <p class="rc-desc">Search thousands of licensed therapists by location, specialty, insurance, and issue. Includes filters for trauma, PTSD, abuse, anxiety, depression, and many other specialties. Many offer sliding scale fees.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.psychologytoday.com/us/therapists" target="_blank">psychologytoday.com</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Find a Therapist</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TRAUMA & PTSD -->
+  <div class="resources-section">
+    <div class="section-label">Trauma &amp; PTSD</div>
+    <h2 class="section-title">Healing from <em>trauma</em></h2>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🕊️</span><div><div class="rc-title">SIDRAN Institute Traumatic Stress</div><div class="rc-available">Free Resources &amp; Referrals</div></div></div>
+        <p class="rc-desc">Helps people understand, recover from, and treat traumatic stress — including PTSD, dissociation, and trauma-related conditions. Offers a helpdesk that connects people with trauma-informed therapists.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.sidran.org" target="_blank">sidran.org</a></span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Email</span><span class="rc-contact-val">help@sidran.org</span></div>
+        </div>
+        <span class="rc-tag">Nationwide · PTSD &amp; Trauma</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🏥</span><div><div class="rc-title">PTSD National Center for PTSD</div><div class="rc-available">24/7 · Free Resources</div></div></div>
+        <p class="rc-desc">Run by the U.S. Department of Veterans Affairs, this resource is available to everyone — not just veterans. Includes self-help tools, therapist finder, and detailed information on PTSD treatment options.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.ptsd.va.gov" target="_blank">ptsd.va.gov</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · PTSD Resources</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🌿</span><div><div class="rc-title">After Silence (Sexual Abuse Survivors)</div><div class="rc-available">Free · Online Community</div></div></div>
+        <p class="rc-desc">An online support community specifically for survivors of rape, sexual assault, and sexual abuse. Moderated message boards, chat rooms, and peer support — for when you need people who truly understand.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.aftersilence.org" target="_blank">aftersilence.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Peer Support</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CHILDREN & FAMILIES -->
+  <div class="resources-section">
+    <div class="section-label">Children &amp; Families</div>
+    <h2 class="section-title">Support for <em>children and families</em></h2>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">👶</span><div><div class="rc-title">Childhelp National Child Abuse Hotline</div><div class="rc-available">24/7 · Free · Confidential</div></div></div>
+        <p class="rc-desc">Professional crisis counselors available for child abuse situations. Provides intervention, emergency services, and connects callers with local resources. Also supports adult survivors of childhood abuse.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call/Text</span><span class="rc-contact-val">1-800-422-4453</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.childhelp.org" target="_blank">childhelp.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Children &amp; Adult Survivors</span>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">👨‍👩‍👧</span><div><div class="rc-title">National Parent Helpline</div><div class="rc-available">Mon–Fri 10am–7pm PT · Free</div></div></div>
+        <p class="rc-desc">Emotional support and referrals for parents under stress. Because taking care of children while healing from your own trauma is hard, and you deserve support too.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-855-427-2736</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.nationalparenthelpline.org" target="_blank">nationalparenthelpline.org</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide · Parents</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EATING DISORDERS -->
+  <div class="resources-section">
+    <div class="section-label">Eating Disorders</div>
+    <h2 class="section-title">Support for <em>eating disorders</em></h2>
+    <div class="resources-grid">
+      <div class="resource-card">
+        <div class="rc-header"><span class="rc-icon">🌸</span><div><div class="rc-title">National Alliance for Eating Disorders</div><div class="rc-available">Mon–Fri 9am–7pm ET · Free</div></div></div>
+        <p class="rc-desc">Provides a helpline staffed by licensed mental health clinicians to help individuals, families, and clinicians dealing with eating disorders. Offers referrals to treatment providers nationwide.</p>
+        <div class="rc-contacts">
+          <div class="rc-contact"><span class="rc-contact-type">Call</span><span class="rc-contact-val">1-866-662-1235</span></div>
+          <div class="rc-contact"><span class="rc-contact-type">Web</span><span class="rc-contact-val"><a href="https://www.allianceforeatingdisorders.com" target="_blank">allianceforeatingdisorders.com</a></span></div>
+        </div>
+        <span class="rc-tag">Nationwide</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELF CARE WHILE HEALING -->
+  <div class="resources-section">
+    <div class="section-label">While You're Healing</div>
+    <h2 class="section-title">Gentle <em>self-care</em> reminders</h2>
+    <div class="selfcare-grid">
+      <div class="selfcare-card"><div class="sc-icon">🌬️</div><div class="sc-title">Breathe</div><div class="sc-text">4 counts in. Hold for 4. Out for 4. Hold for 4. Repeat. Your body is safe right now.</div></div>
+      <div class="selfcare-card"><div class="sc-icon">💧</div><div class="sc-title">Hydrate</div><div class="sc-text">Drink a glass of water. Stress dehydrates us. This is not a small thing.</div></div>
+      <div class="selfcare-card"><div class="sc-icon">🦶</div><div class="sc-title">Ground yourself</div><div class="sc-text">Name 5 things you can see. 4 you can touch. 3 you can hear. 2 you can smell. 1 you can taste.</div></div>
+      <div class="selfcare-card"><div class="sc-icon">🤗</div><div class="sc-title">You are enough</div><div class="sc-text">You don't have to be okay today. Healing is not linear. Being here is enough.</div></div>
+      <div class="selfcare-card"><div class="sc-icon">📞</div><div class="sc-title">Reach out</div><div class="sc-text">Text someone you trust. Call a friend. Or call 988. Asking for help is brave.</div></div>
+      <div class="selfcare-card"><div class="sc-icon">💜</div><div class="sc-title">You are not alone</div><div class="sc-text">There is an entire community here who understands. You found this place for a reason.</div></div>
+    </div>
+  </div>
+
+  <!-- FIND LOCAL RESOURCES -->
+  <div class="important-note" style="margin-top:0;">
+    <div class="in-title">🔍 Finding Local Resources in Your Area</div>
+    <p class="in-text" style="margin-bottom:.6rem;">For resources specific to your city or state, these directories connect you with local providers:</p>
+    <p class="in-text">
+      • <a href="https://findtreatment.samhsa.gov" target="_blank">findtreatment.samhsa.gov</a> — SAMHSA's treatment locator by zip code<br/>
+      • <a href="https://www.211.org" target="_blank">211.org</a> or dial <strong>2-1-1</strong> — connects you with local social services in every state<br/>
+      • <a href="https://www.domesticshelters.org" target="_blank">domesticshelters.org</a> — find local domestic violence shelters by zip code<br/>
+      • <a href="https://www.rainn.org/get-help/local-counseling-centers" target="_blank">rainn.org/local</a> — find local sexual assault service providers
+    </p>
+  </div>
+</main>
+
+<div class="res-footer">
+  <div class="res-footer-logo">Expressions by Tosha Hanvey</div>
+  <div class="res-footer-tag">Art With Purpose · Healing Through Color</div>
+  <div class="res-footer-links">
+    <a href="index.html">← Main Site</a>
+    <a href="index.html#shop">Shop</a>
+    <a href="community.html">Community</a>
+    <a href="index.html#contact">Contact Tosha</a>
+  </div>
+  <p class="disclaimer">This resource page is provided for informational purposes only. Expressions by Tosha Hanvey is not a mental health provider and does not offer clinical services. All hotline numbers are verified as of 2026. If you are in immediate danger, please call 911. We encourage you to verify contact information for any resource before use, as details may change.</p>
+</div>
+
+<script>
+(()=>{const t=localStorage.getItem('ebth-theme');if(t&&t!=='serenity')document.body.classList.add('theme-'+t);})();
+</script>
+</body>
+</html>

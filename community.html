@@ -178,6 +178,26 @@ a{color:var(--accent1);text-decoration:none;}
 .cs-author{font-size:.65rem;color:var(--accent1);vertical-align:super;}
 /* No game selected */
 .no-game{text-align:center;padding:2rem;color:var(--text-light);font-size:.82rem;}
+/* CRISIS FLOAT */
+.crisis-float{position:fixed;bottom:1.2rem;right:1.2rem;z-index:600;display:flex;flex-direction:column;align-items:flex-end;gap:.45rem;}
+.crisis-float-btn{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;border:none;border-radius:50px;padding:8px 16px;font-family:var(--font-ui);font-size:.7rem;font-weight:500;cursor:pointer;box-shadow:0 4px 18px rgba(140,100,160,.3);transition:transform .2s;display:flex;align-items:center;gap:.38rem;}
+.crisis-float-btn:hover{transform:translateY(-2px);}
+.crisis-panel{background:var(--surface);border-radius:14px;padding:1.1rem 1.1rem .85rem;border:1px solid var(--border);box-shadow:0 8px 36px rgba(0,0,0,.18);width:290px;display:none;position:relative;}
+.crisis-panel.open{display:block;}
+.crisis-panel-title{font-family:var(--font-head);font-size:.95rem;color:var(--text-dark);margin-bottom:.2rem;}
+.crisis-panel-sub{font-family:var(--font-ui);font-size:.68rem;color:var(--text-light);margin-bottom:.8rem;line-height:1.5;}
+.crisis-resource{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--border);}
+.crisis-resource:last-of-type{border-bottom:none;padding-bottom:0;}
+.cr-icon{font-size:1rem;flex-shrink:0;margin-top:.08rem;}
+.cr-name{font-family:var(--font-ui);font-size:.72rem;font-weight:600;color:var(--text-dark);}
+.cr-detail{font-family:var(--font-ui);font-size:.66rem;color:var(--text-light);margin-top:.06rem;}
+.cr-detail a{color:var(--accent1);}
+.crisis-panel-close{background:none;border:none;position:absolute;top:.65rem;right:.8rem;font-size:1.15rem;color:var(--text-light);cursor:pointer;line-height:1;}
+.crisis-panel-footer{font-family:var(--font-ui);font-size:.62rem;color:var(--text-light);text-align:center;margin-top:.65rem;line-height:1.5;border-top:1px solid var(--border);padding-top:.55rem;}
+/* SAFETY COMPANION */
+.safety-msg{background:linear-gradient(135deg,rgba(201,167,212,.15),rgba(168,197,176,.15));border:1px solid var(--accent1);border-radius:12px;padding:.85rem 1rem;margin:.5rem 1rem;font-family:var(--font-ui);font-size:.76rem;color:var(--text-dark);line-height:1.6;display:none;}
+.safety-msg-title{font-weight:600;color:var(--accent1);margin-bottom:.3rem;}
+.safety-msg-close{float:right;background:none;border:none;color:var(--text-light);cursor:pointer;font-size:.9rem;margin-left:.5rem;}
 
 /* ADMIN GAME CONTROLS */
 .admin-game-panel{background:var(--bg2);border-radius:11px;padding:.85rem 1rem;border:1px solid var(--border);margin-top:.9rem;border-left:3px solid var(--accent1);}
@@ -200,7 +220,7 @@ a{color:var(--accent1);text-decoration:none;}
   <div class="join-card">
     <div class="join-logo">Expressions by Tosha Hanvey<span>Community Space</span></div>
     <div class="join-title">Welcome to our <em>community</em></div>
-    <p class="join-sub">A safe space for healing, connection, and joy. Open to members, subscribers, and invited guests.</p>
+    <p class="join-sub">A safe space for healing, connection, and joy. Open to members, subscribers, and invited guests.<br/><span style="font-size:.65rem;color:var(--text-light);">This community uses automated wellness monitoring to help connect members with support resources when needed. Your conversations remain private.</span></p>
     <div class="join-tabs">
       <div class="join-tab active" onclick="switchJoinTab('member',this)">I'm a Member</div>
       <div class="join-tab" onclick="switchJoinTab('invite',this)">Invite Code</div>
@@ -236,6 +256,31 @@ a{color:var(--accent1);text-decoration:none;}
 
 <!-- COMMUNITY AREA -->
 <div id="communityArea">
+  <!-- CRISIS FLOAT BUTTON -->
+  <div class="crisis-float">
+    <div class="crisis-panel" id="crisisPanel">
+      <button class="crisis-panel-close" onclick="toggleCrisisPanel()">×</button>
+      <div class="crisis-panel-title">💜 You are not alone</div>
+      <p class="crisis-panel-sub">Free, confidential support available 24/7 anywhere in the US.</p>
+      <div class="crisis-resource"><span class="cr-icon">📞</span><div><div class="cr-name">988 Suicide &amp; Crisis Lifeline</div><div class="cr-detail">Call or text <strong>988</strong></div></div></div>
+      <div class="crisis-resource"><span class="cr-icon">💬</span><div><div class="cr-name">Crisis Text Line</div><div class="cr-detail">Text <strong>HOME</strong> to <strong>741741</strong></div></div></div>
+      <div class="crisis-resource"><span class="cr-icon">🏠</span><div><div class="cr-name">National DV Hotline</div><div class="cr-detail">Call <strong>1-800-799-7233</strong></div></div></div>
+      <div class="crisis-resource"><span class="cr-icon">💜</span><div><div class="cr-name">RAINN Sexual Assault</div><div class="cr-detail">Call <strong>1-800-656-4673</strong></div></div></div>
+      <div class="crisis-resource"><span class="cr-icon">🧠</span><div><div class="cr-name">SAMHSA Mental Health</div><div class="cr-detail">Call <strong>1-800-662-4357</strong></div></div></div>
+      <div class="crisis-panel-footer">All resources free &amp; confidential, 24/7.<br/>In immediate danger? Call <strong>911</strong>.<br/><a href="resources.html" target="_blank" style="color:var(--accent1);">Full resource directory →</a></div>
+    </div>
+    <button class="crisis-float-btn" onclick="toggleCrisisPanel()">💜 Need Support?</button>
+  </div>
+  <!-- SAFETY COMPANION MESSAGE (shown privately to user if concern detected) -->
+  <div class="safety-msg" id="safetyMsg">
+    <button class="safety-msg-close" onclick="document.getElementById('safetyMsg').style.display='none'">×</button>
+    <div class="safety-msg-title">💜 We noticed your message</div>
+    You are not alone, and this community cares about you. If you're going through something difficult right now, there are people ready to help — free, confidential, and available right now:<br/><br/>
+    📞 <strong>Call or text 988</strong> — Suicide &amp; Crisis Lifeline<br/>
+    💬 <strong>Text HOME to 741741</strong> — Crisis Text Line<br/>
+    🏠 <strong>1-800-799-7233</strong> — National Domestic Violence Hotline<br/><br/>
+    <a href="resources.html" target="_blank" style="color:var(--accent1);">See more resources →</a>
+  </div>
   <!-- TOP BAR -->
   <div class="comm-topbar">
     <div class="comm-logo">Expressions<span>Community</span></div>
@@ -501,6 +546,33 @@ function sendMessage(){
   const text=inp.value.trim();if(!text)return;
   inp.value='';inp.style.height='38px';
   rtdb.ref('community/messages/'+currentRoom).push({text,author:currentUser.name,authorId:currentUser.sessionId,isAdmin:currentUser.isAdmin||false,timestamp:firebase.database.ServerValue.TIMESTAMP,reactions:{}});
+  checkMessageSafety(text);
+}
+
+// SAFETY COMPANION — Gemini-powered, private to the user who sent the message
+async function checkMessageSafety(text){
+  const key=localStorage.getItem('ebth-gemini-key')||localStorage.getItem('ebth-comm-gemini-key')||'';
+  if(!key||text.length<10)return;
+  try{
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:'You are a safety monitor for an online healing community for trauma survivors. Analyze this message ONLY for clear, explicit indicators that the person may be in immediate crisis, considering self-harm, or suicidal. Do NOT flag general expressions of sadness, struggle, healing journeys, or difficult emotions. Only flag messages with explicit crisis language. Message: "'+text.replace(/"/g,"'")+'" Respond with ONLY valid JSON: {"concern":true or false,"level":"low","medium","high"}'}]}],generationConfig:{maxOutputTokens:50}})
+    });
+    const data=await resp.json();
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'{"concern":false}';
+    const result=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(result.concern){
+      const msg=document.getElementById('safetyMsg');
+      if(msg)msg.style.display='block';
+      // Notify admin discreetly via RTDB
+      rtdb.ref('community/safety-alerts').push({room:currentRoom,timestamp:firebase.database.ServerValue.TIMESTAMP,level:result.level||'medium'});
+    }
+  }catch(e){/* Silent fail — never break chat */}
+}
+
+// CRISIS PANEL
+function toggleCrisisPanel(){
+  document.getElementById('crisisPanel').classList.toggle('open');
 }
 function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function autoGrow(el){el.style.height='38px';el.style.height=Math.min(el.scrollHeight,120)+'px';}

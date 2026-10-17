@@ -492,6 +492,42 @@ footer{position:relative;z-index:1;background:var(--text-dark);color:rgba(255,25
 .wm-dot{width:7px;height:7px;border-radius:50%;background:#ccc;}
 .wm-dot.active{background:#00c851;}
 input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-top:.22rem;}
+/* CRISIS FLOAT BUTTON */
+.crisis-float{position:fixed;bottom:1.4rem;right:1.4rem;z-index:350;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;}
+.crisis-float-btn{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;border:none;border-radius:50px;padding:9px 17px;font-family:var(--font-ui);font-size:.72rem;font-weight:500;cursor:pointer;box-shadow:0 4px 20px rgba(140,100,160,.3);transition:transform .2s,box-shadow .2s;display:flex;align-items:center;gap:.4rem;}
+.crisis-float-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(140,100,160,.4);}
+.crisis-panel{background:var(--surface);border-radius:16px;padding:1.2rem 1.2rem .9rem;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.18);width:300px;display:none;position:relative;}
+.crisis-panel.open{display:block;animation:fadeUp .25s ease;}
+.crisis-panel-title{font-family:var(--font-head);font-size:1rem;color:var(--text-dark);margin-bottom:.2rem;}
+.crisis-panel-sub{font-family:var(--font-ui);font-size:.7rem;color:var(--text-light);margin-bottom:.85rem;line-height:1.5;}
+.crisis-resource{display:flex;align-items:flex-start;gap:.55rem;padding:.55rem 0;border-bottom:1px solid var(--border);}
+.crisis-resource:last-of-type{border-bottom:none;padding-bottom:0;}
+.cr-icon{font-size:1.05rem;flex-shrink:0;margin-top:.1rem;}
+.cr-name{font-family:var(--font-ui);font-size:.75rem;font-weight:600;color:var(--text-dark);}
+.cr-detail{font-family:var(--font-ui);font-size:.68rem;color:var(--text-light);margin-top:.08rem;}
+.cr-detail a{color:var(--accent1);}
+.crisis-panel-close{background:none;border:none;position:absolute;top:.7rem;right:.85rem;font-size:1.2rem;color:var(--text-light);cursor:pointer;line-height:1;}
+.crisis-panel-footer{font-family:var(--font-ui);font-size:.64rem;color:var(--text-light);text-align:center;margin-top:.7rem;line-height:1.5;border-top:1px solid var(--border);padding-top:.6rem;}
+/* FROM TOSHA'S HEART */
+.from-tosha-section{background:linear-gradient(135deg,rgba(201,167,212,.07),rgba(232,180,192,.07));border-left:3px solid var(--accent1);border-radius:0 10px 10px 0;padding:.8rem .95rem;margin:.8rem 0;}
+.from-tosha-label{font-family:var(--font-ui);font-size:.59rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent1);margin-bottom:.3rem;display:flex;align-items:center;gap:.32rem;}
+.from-tosha-text{font-family:var(--font-head);font-style:italic;font-size:.93rem;color:var(--text-dark);line-height:1.6;}
+/* SHOP BY FEELING */
+.feeling-bar{display:flex;gap:.38rem;flex-wrap:wrap;margin-bottom:.8rem;padding:.65rem .85rem;background:var(--bg2);border-radius:11px;border:1px solid var(--border);align-items:center;}
+.feeling-bar-label{font-family:var(--font-ui);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin-right:.25rem;white-space:nowrap;flex-shrink:0;}
+.feeling-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:50px;padding:4px 12px;font-family:var(--font-ui);font-size:.69rem;color:var(--text-mid);cursor:pointer;transition:all .18s;white-space:nowrap;}
+.feeling-btn:hover{border-color:var(--accent2);}
+.feeling-btn.active{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+/* FEELING TAGS IN PRODUCT FORM */
+.feeling-tags-wrap{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.38rem;}
+.ftag{display:inline-flex;align-items:center;gap:.28rem;background:var(--bg);border:1.5px solid var(--border);border-radius:50px;padding:4px 11px;cursor:pointer;transition:all .18s;font-family:var(--font-ui);font-size:.69rem;color:var(--text-mid);user-select:none;}
+.ftag input{display:none;}
+.ftag.checked{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+/* BIRTHDAY IN CHECKOUT */
+.birthday-opt-row{display:flex;align-items:center;gap:.55rem;padding:.6rem .8rem;background:var(--bg2);border-radius:9px;border:1px solid var(--border);margin-bottom:.75rem;}
+.birthday-opt-row label{font-family:var(--font-ui);font-size:.72rem;color:var(--text-mid);flex:1;}
+.birthday-opt-row input[type=date]{background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:5px 8px;font-family:var(--font-ui);font-size:.76rem;color:var(--text-dark);outline:none;transition:border-color .2s;}
+.birthday-opt-row input[type=date]:focus{border-color:var(--accent1);}
 /* RESPONSIVE */
 @media(max-width:768px){
   .nav-links{display:none;}
@@ -576,6 +612,16 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
     <div class="divider fade-in"></div>
     <p class="fade-in" style="color:var(--text-mid);max-width:490px;margin-bottom:1.6rem;" id="txt-shopintro">Each item is crafted by Tosha with care and intention. Browse, find what speaks to you, and carry the message with you.</p>
     <div class="filter-bar fade-in" id="filterBar"></div>
+    <div class="feeling-bar fade-in" id="feelingBar">
+      <span class="feeling-bar-label">💜 Shop by Feeling:</span>
+      <button class="feeling-btn" onclick="filterByFeeling('encouragement',this)">I Need Encouragement</button>
+      <button class="feeling-btn" onclick="filterByFeeling('healing',this)">I'm Healing</button>
+      <button class="feeling-btn" onclick="filterByFeeling('anxiety',this)">For Anxiety</button>
+      <button class="feeling-btn" onclick="filterByFeeling('grief',this)">Processing Grief</button>
+      <button class="feeling-btn" onclick="filterByFeeling('gift',this)">Gift for a Survivor</button>
+      <button class="feeling-btn" onclick="filterByFeeling('strength',this)">Finding Strength</button>
+      <button class="feeling-btn" onclick="filterByFeeling('self-care',this)">Self-Care</button>
+    </div>
     <div class="products-grid" id="productsGrid"><div class="empty-shop"><div style="font-size:2.5rem;margin-bottom:.6rem;">🎨</div><p style="font-family:var(--font-ui);">No products yet — add via Admin → Products.</p></div></div>
   </div>
 </section>
@@ -717,6 +763,23 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
   <button class="footer-admin-btn" onclick="openAdmin()">⚙ Admin</button>
 </footer>
 
+<!-- CRISIS FLOAT BUTTON -->
+<div class="crisis-float">
+  <div class="crisis-panel" id="crisisPanel">
+    <button class="crisis-panel-close" onclick="toggleCrisisPanel()">×</button>
+    <div class="crisis-panel-title">💜 You are not alone</div>
+    <p class="crisis-panel-sub">Free, confidential support available 24/7 anywhere in the United States.</p>
+    <div class="crisis-resource"><span class="cr-icon">📞</span><div><div class="cr-name">988 Suicide &amp; Crisis Lifeline</div><div class="cr-detail">Call or text <strong>988</strong> · <a href="https://988lifeline.org" target="_blank">988lifeline.org</a></div></div></div>
+    <div class="crisis-resource"><span class="cr-icon">💬</span><div><div class="cr-name">Crisis Text Line</div><div class="cr-detail">Text <strong>HOME</strong> to <strong>741741</strong></div></div></div>
+    <div class="crisis-resource"><span class="cr-icon">🏠</span><div><div class="cr-name">National Domestic Violence Hotline</div><div class="cr-detail">Call <strong>1-800-799-7233</strong> · Text START to 88788</div></div></div>
+    <div class="crisis-resource"><span class="cr-icon">💜</span><div><div class="cr-name">RAINN Sexual Assault Hotline</div><div class="cr-detail">Call <strong>1-800-656-4673</strong></div></div></div>
+    <div class="crisis-resource"><span class="cr-icon">🧠</span><div><div class="cr-name">SAMHSA Mental Health Helpline</div><div class="cr-detail">Call <strong>1-800-662-4357</strong> · Free, confidential</div></div></div>
+    <div class="crisis-resource"><span class="cr-icon">🌈</span><div><div class="cr-name">The Trevor Project (LGBTQ+)</div><div class="cr-detail">Call <strong>1-866-488-7386</strong> · Text START to 678-678</div></div></div>
+    <div class="crisis-panel-footer">All resources are free, confidential, and available 24/7.<br/>If you are in immediate danger, please call <strong>911</strong>.<br/><a href="resources.html" target="_blank" style="color:var(--accent1);">See full resource directory →</a></div>
+  </div>
+  <button class="crisis-float-btn" onclick="toggleCrisisPanel()">💜 Need Support?</button>
+</div>
+
 <!-- PRODUCT DETAIL MODAL -->
 <div class="modal-overlay" id="productModal" onclick="if(event.target===this)closeModal('productModal')">
   <div class="modal-box"><button class="modal-close" onclick="closeModal('productModal')">×</button><div id="detailContent" class="product-detail"></div></div>
@@ -758,6 +821,10 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
           <div class="form-row"><div class="ff"><label>First Name</label><input type="text" id="co-first" required/></div><div class="ff"><label>Last Name</label><input type="text" id="co-last" required/></div></div>
           <div class="ff"><label>Email</label><input type="email" id="co-email" required/></div>
           <div class="ff"><label>Phone (optional)</label><input type="tel" id="co-phone"/></div>
+          <div class="birthday-opt-row">
+            <label>🎂 Birthday (optional — we'll send you a little something)</label>
+            <input type="date" id="co-birthday"/>
+          </div>
           <div id="physicalShippingFields">
             <div class="ff"><label>Street Address</label><input type="text" id="co-addr"/></div>
             <div class="form-row"><div class="ff"><label>City</label><input type="text" id="co-city"/></div><div class="ff"><label>State</label><input type="text" id="co-state"/></div></div>
@@ -813,6 +880,11 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
       </div>
     </div>
     <div class="admin-body">
+      <!-- SAFETY ALERT BANNER -->
+      <div id="safetyAlertBanner" style="display:none;background:rgba(201,167,212,.2);border:1.5px solid var(--accent1);border-radius:10px;padding:.75rem 1rem;margin-bottom:.9rem;font-family:var(--font-ui);font-size:.78rem;color:var(--text-dark);align-items:center;justify-content:space-between;gap:.7rem;">
+        <span id="safetyAlertText"></span>
+        <a href="community.html" target="_blank" class="btn btn-primary btn-sm">Open Community</a>
+      </div>
 
       <!-- LOGIN -->
       <div class="adm-sec active" id="sec-login">
@@ -834,6 +906,8 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         <div class="top-list" id="topProducts"></div>
         <div class="sec-ttl">📦 Orders <span id="ordersLiveNote" style="font-size:.63rem;color:var(--accent3);font-family:var(--font-ui);">— live</span> <button class="btn btn-ghost btn-sm" style="margin-left:.5rem;font-size:.62rem;padding:3px 9px;" onclick="toggleArchivedView()">Show Archived</button></div>
         <div class="orders-list" id="ordersList"></div>
+        <div class="sec-ttl" style="margin-top:1rem;">🎂 Upcoming Birthdays (next 30 days)</div>
+        <div id="birthdayList"><div class="no-data">No upcoming birthdays.</div></div>
       </div>
 
       <!-- PRODUCTS -->
@@ -855,6 +929,18 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
             <div class="pf-field"><label>Availability</label><select id="pf-stock"><option value="available">Available</option><option value="limited">Limited</option><option value="soldout">Sold Out</option></select></div>
           </div>
           <div class="pf-field"><label>Description</label><textarea id="pf-desc" placeholder="What makes this piece special..." style="min-height:62px;resize:vertical;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-family:var(--font-body);font-size:.86rem;color:var(--text-dark);outline:none;width:100%;"></textarea></div>
+          <div class="pf-field"><label>💜 From Tosha's Heart (optional — why you created this piece)</label><textarea id="pf-from-tosha" placeholder="e.g. I painted this during a morning when I needed to remind myself that small steps still count. It's for anyone who has been hard on themselves." style="min-height:72px;resize:vertical;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-family:var(--font-body);font-size:.86rem;color:var(--text-dark);outline:none;width:100%;"></textarea></div>
+          <div class="pf-field"><label>💜 Shop by Feeling — tag this product (select all that apply)</label>
+            <div class="feeling-tags-wrap" id="feelingTagsWrap">
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="encouragement"/>I Need Encouragement</label>
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="healing"/>I'm Healing</label>
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="anxiety"/>For Anxiety</label>
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="grief"/>Processing Grief</label>
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="gift"/>Gift for a Survivor</label>
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="strength"/>Finding Strength</label>
+              <label class="ftag" onclick="this.classList.toggle('checked')"><input type="checkbox" value="self-care"/>Self-Care</label>
+            </div>
+          </div>
           <div class="digital-toggle-section">
             <label class="toggle-wrap"><span class="toggle-switch"><input type="checkbox" id="pf-digital" onchange="toggleDigitalFields()"/><span class="toggle-slider"></span></span><span class="toggle-lbl">📥 This is a Digital Download (no shipping)</span></label>
             <div class="digital-url-field" id="digitalUrlField">
@@ -1208,6 +1294,18 @@ function startListeners(){
   db.collection('settings').doc('text').onSnapshot(doc=>{
     if(doc.exists)applyEditableText(doc.data());
   });
+  // Safety alerts from community — notify Tosha discreetly
+  if(rtdb){
+    rtdb.ref('community/safety-alerts').limitToLast(1).on('child_added',snap=>{
+      const alert=snap.val();
+      const banner=document.getElementById('safetyAlertBanner');
+      if(banner&&adminUnlocked){
+        banner.style.display='flex';
+        banner.querySelector('#safetyAlertText').textContent='💜 A community member may need support right now — check the community chat.';
+        setTimeout(()=>banner.style.display='none',30000);
+      }
+    });
+  }
 }
 
 // DB HELPERS
@@ -1252,7 +1350,8 @@ function renderProducts(){
   renderFilterBar();
   const grid=document.getElementById('productsGrid');
   const active=products.filter(p=>p.active!==false);
-  const list=currentFilter==='all'?active:active.filter(p=>p.category===currentFilter);
+  let list=currentFilter==='all'?active:active.filter(p=>p.category===currentFilter);
+  if(currentFeeling)list=list.filter(p=>(p.feelingTags||[]).includes(currentFeeling));
   if(!list.length){grid.innerHTML=`<div class="empty-shop"><div style="font-size:2.6rem;margin-bottom:.55rem;">🎨</div><p style="font-family:var(--font-ui);">${products.length?'No products in this category.':'No products yet.'}</p></div>`;return;}
   grid.innerHTML=list.map(p=>{
     const views=p.views||0;
@@ -1291,6 +1390,7 @@ function openProduct(id){
       <div class="detail-price" id="detailPriceDisplay">$${(parseFloat(p.price)+adjPrice).toFixed(2)}</div>
       <div class="detail-price-note" id="detailPriceNote">${adjPrice!==0?'Base $'+parseFloat(p.price).toFixed(2)+' + options':''}</div>
       <div class="detail-desc">${esc(p.desc||'A beautiful piece crafted with intention and care by Tosha.')}</div>
+      ${p.fromTosha?`<div class="from-tosha-section"><div class="from-tosha-label">💜 From Tosha's Heart</div><div class="from-tosha-text">${esc(p.fromTosha)}</div></div>`:''}
       <div class="detail-views">👁 ${newViews} ${newViews===1?'person has':'people have'} viewed this piece</div>
       ${optsHtml}
       <div class="qty-row"><span class="qty-lbl">Qty</span><div class="qty-ctrl"><button class="qty-btn" onclick="changeQty(-1)">−</button><span class="qty-num" id="dQty">1</span><button class="qty-btn" onclick="changeQty(1)">+</button></div></div>
@@ -1384,6 +1484,7 @@ function goToPayment(e){
     email:document.getElementById('co-email').value,phone:document.getElementById('co-phone').value,
     address:allDigital?'Digital Only':`${document.getElementById('co-addr').value}, ${document.getElementById('co-city').value}, ${document.getElementById('co-state').value} ${document.getElementById('co-zip').value}, ${document.getElementById('co-country').value}`,
     notes:document.getElementById('co-notes').value,
+    birthday:document.getElementById('co-birthday')?.value||'',
     isGift,giftName:isGift?document.getElementById('co-gift-name').value:'',
     giftAddr:isGift?`${document.getElementById('co-gift-addr').value}, ${document.getElementById('co-gift-city').value}, ${document.getElementById('co-gift-state-zip').value}`:'',
     giftMsg:isGift?document.getElementById('co-gift-msg').value:'',
@@ -1577,6 +1678,7 @@ function renderKPI(){
   const sorted=[...products].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
   document.getElementById('topProducts').innerHTML=sorted.length?sorted.map((p,i)=>`<div class="top-row"><div class="tp-rank">#${i+1}</div><div class="tp-img">${p.img?`<img src="${p.img}" alt="">`:(CAT_ICONS[p.category]||'🎨')}</div><div class="tp-info"><div class="tp-title">${esc(p.title)}${p.isDigital?' 📥':''}</div><div class="tp-meta">${p.category}</div></div><div class="tp-views">👁 ${p.views||0}</div></div>`).join(''):'<div class="no-data">No views yet.</div>';
   renderOrdersList();
+  renderUpcomingBirthdays();
 }
 function toggleArchivedView(){showArchived=!showArchived;document.querySelector('[onclick="toggleArchivedView()"]').textContent=showArchived?'Hide Archived':'Show Archived';renderOrdersList();}
 function renderOrdersList(){
@@ -1639,17 +1741,24 @@ function editProduct(id){
   document.getElementById('pf-stock').value=p.stock||'available';document.getElementById('pf-desc').value=p.desc||'';
   document.getElementById('pf-digital').checked=p.isDigital||false;document.getElementById('pf-download-url').value=p.downloadUrl||'';
   document.getElementById('digitalUrlField').style.display=p.isDigital?'block':'none';
+  const ft=document.getElementById('pf-from-tosha');if(ft)ft.value=p.fromTosha||'';
+  setFeelingTags(p.feelingTags||[]);
   populateCatSelect();document.getElementById('pf-cat').value=p.category;
   if(p.img)showImgPreview(p.img);else clearImg();
   renderOptGroups(p.options||[]);
   const f=document.getElementById('prodForm');f.classList.add('open');f.scrollIntoView({behavior:'smooth'});
 }
-function cancelProdForm(){document.getElementById('prodForm').classList.remove('open');editingId=null;currentImg=null;clearImg();}
+// FEELING TAG HELPERS
+function getFeelingTags(){const tags=[];document.querySelectorAll('#feelingTagsWrap .ftag').forEach(el=>{if(el.classList.contains('checked')){const inp=el.querySelector('input');if(inp)tags.push(inp.value);}});return tags;}
+function setFeelingTags(tags){document.querySelectorAll('#feelingTagsWrap .ftag').forEach(el=>{const inp=el.querySelector('input');if(inp){const checked=tags.includes(inp.value);el.classList.toggle('checked',checked);}}); }
+
+// CANCEL PROD FORM — reset feeling tags too
+function cancelProdForm(){document.getElementById('prodForm').classList.remove('open');editingId=null;currentImg=null;clearImg();setFeelingTags([]);const ft=document.getElementById('pf-from-tosha');if(ft)ft.value='';}
 async function saveProduct(){
   const title=document.getElementById('pf-title').value.trim();const price=document.getElementById('pf-price').value;
   if(!title||!price){alert('Please enter a title and price.');return;}
   const cat=document.getElementById('pf-cat').value;const isDigital=document.getElementById('pf-digital').checked;
-  const prod={title,category:cat,price,stock:document.getElementById('pf-stock').value,desc:document.getElementById('pf-desc').value.trim(),img:currentImg,isDigital,downloadUrl:isDigital?document.getElementById('pf-download-url').value.trim():'',options:getOptGroups(),active:true};
+  const prod={title,category:cat,price,stock:document.getElementById('pf-stock').value,desc:document.getElementById('pf-desc').value.trim(),fromTosha:document.getElementById('pf-from-tosha').value.trim(),img:currentImg,isDigital,downloadUrl:isDigital?document.getElementById('pf-download-url').value.trim():'',options:getOptGroups(),feelingTags:getFeelingTags(),active:true};
   if(editingId){if(db)await db.collection('products').doc(editingId).set({...products.find(x=>x._id===editingId),...prod,_id:undefined},{merge:true});}
   else{prod.views=0;if(db)await db.collection('products').add(prod);}
   if(!categories.includes(cat)){categories.push(cat);await dbSet('settings','categories',{list:categories});updateCommissionCatList();}
@@ -1836,6 +1945,36 @@ async function getGeminiActivityPrompt(){const key=localStorage.getItem('ebth-ge
 async function saveScheduledActivity(){const type=document.getElementById('act-type')?.value;const title=document.getElementById('act-title')?.value.trim();const prompt=document.getElementById('act-prompt')?.value.trim();const dt=document.getElementById('act-datetime')?.value;const resultEl=document.getElementById('actScheduleResult');if(!title||!prompt){if(resultEl)resultEl.textContent='Please fill in title and prompt.';return;}await db.collection('community-activities').add({type,title,prompt,scheduledFor:dt?firebase.firestore.Timestamp.fromDate(new Date(dt)):firebase.firestore.Timestamp.now(),status:'scheduled',createdAt:firebase.firestore.FieldValue.serverTimestamp()});if(resultEl){resultEl.style.color='var(--accent3)';resultEl.textContent='✓ Activity scheduled!';setTimeout(()=>resultEl.textContent='',4000);}const ti=document.getElementById('act-title');const pr=document.getElementById('act-prompt');const dti=document.getElementById('act-datetime');if(ti)ti.value='';if(pr)pr.value='';if(dti)dti.value='';}
 function loadCommunityMessages(){const el=document.getElementById('communityMsgList');if(!el)return;el.innerHTML='<div class="no-data">Loading...</div>';const rooms=['general','healing','checkin'];const allMsgs=[];let done=0;if(!rtdb){el.innerHTML='<div class="no-data">Realtime Database connecting...</div>';return;}const roomLabels={general:'💬 General',healing:'💜 Healing',checkin:'🌅 Check-In'};rooms.forEach(room=>{rtdb.ref('community/messages/'+room).limitToLast(10).get().then(snap=>{snap.forEach(child=>{allMsgs.push({room,id:child.key,...child.val()});});done++;if(done===rooms.length){allMsgs.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));if(!allMsgs.length){el.innerHTML='<div class="no-data">No messages yet.</div>';return;}el.innerHTML=allMsgs.slice(0,30).map(m=>`<div style="padding:.42rem .65rem;background:var(--bg2);border-radius:8px;border:1px solid var(--border);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.12rem;"><span style="font-size:.66rem;color:var(--accent1);font-weight:500;">${esc(m.author)} <span style="color:var(--text-light);font-weight:400;">in ${roomLabels[m.room]||m.room}</span></span><button class="icon-btn del" style="font-size:.63rem;" onclick="deleteCommunityMsg('${m.room}','${m.id}',this)">🗑</button></div><div style="font-size:.78rem;color:var(--text-dark);">${esc(m.text||'[deleted]')}</div></div>`).join('');}});});}
 function deleteCommunityMsg(room,id,btn){if(!confirm('Delete this message?'))return;rtdb.ref('community/messages/'+room+'/'+id).update({deleted:true,text:''}).then(()=>{if(btn)btn.closest('div').style.opacity='.4';});}
+
+// CRISIS PANEL
+function toggleCrisisPanel(){document.getElementById('crisisPanel').classList.toggle('open');}
+document.addEventListener('click',e=>{const panel=document.getElementById('crisisPanel');if(panel&&panel.classList.contains('open')&&!e.target.closest('.crisis-float'))panel.classList.remove('open');});
+
+// SHOP BY FEELING
+var currentFeeling=null; // var: renderProducts() runs before this line during startup
+function filterByFeeling(tag,btn){
+  document.querySelectorAll('.feeling-btn').forEach(b=>b.classList.remove('active'));
+  if(currentFeeling===tag){currentFeeling=null;renderProducts();return;}
+  currentFeeling=tag;btn.classList.add('active');renderProducts();
+}
+
+// BIRTHDAY — upcoming birthdays in admin
+function renderUpcomingBirthdays(){
+  const el=document.getElementById('birthdayList');if(!el)return;
+  const now=new Date();const upcoming=[];
+  orders.forEach(o=>{
+    if(!o.birthday||!o.customer||!o.email)return;
+    const [y,m,d]=o.birthday.split('-').map(Number);
+    const thisYear=new Date(now.getFullYear(),m-1,d);
+    const nextYear=new Date(now.getFullYear()+1,m-1,d);
+    const target=thisYear>=now?thisYear:nextYear;
+    const diff=Math.ceil((target-now)/(1000*60*60*24));
+    if(diff<=30)upcoming.push({name:o.customer,email:o.email,date:o.birthday,diff,target});
+  });
+  upcoming.sort((a,b)=>a.diff-b.diff);
+  if(!upcoming.length){el.innerHTML='<div class="no-data">No upcoming birthdays in the next 30 days.</div>';return;}
+  el.innerHTML=`<div class="birthday-list">${upcoming.map(b=>`<div class="birthday-row-admin"><div><div class="birthday-name">🎂 ${esc(b.name)}</div><div class="birthday-email">${esc(b.email)}</div></div><div class="birthday-date">${b.diff===0?'Today! 🎉':b.diff===1?'Tomorrow':b.diff+' days'}<br/><span style="font-size:.6rem;color:var(--text-light);">${b.date}</span></div></div>`).join('')}</div>`;
+}
 
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 // Keyboard shortcut: Ctrl+Shift+A opens admin
