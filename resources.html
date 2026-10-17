@@ -401,5 +401,11 @@ main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:0 5% 4re
 <script>
 (()=>{const t=localStorage.getItem('ebth-theme');if(t&&t!=='serenity')document.body.classList.add('theme-'+t);})();
 </script>
+<!-- Quick Exit: leaves fast if someone walks in -->
+<button id="quickExit" onclick="quickExit()" title="Leave this site fast (or press Esc twice)" style="position:fixed;left:14px;bottom:14px;z-index:99999;background:#b3261e;color:#fff;border:none;border-radius:999px;padding:.6rem 1rem;font:600 14px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;">✕ Quick Exit</button>
+<script>
+function quickExit(){try{document.body.style.display='none';document.title='Weather';}catch(e){}try{window.open('https://weather.com','_blank');}catch(e){}location.replace('https://www.google.com/search?q=weather');}
+(function(){var last=0;document.addEventListener('keydown',function(e){if(e.key==='Escape'){var n=Date.now();if(n-last<800)quickExit();last=n;}});})();
+</script>
 </body>
 </html>

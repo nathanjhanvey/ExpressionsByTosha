@@ -17,6 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 /* THEMES */
 :root{--bg:#fdf8f5;--bg2:#f5eef8;--surface:#fffbfe;--accent1:#c9a7d4;--accent2:#e8b4c0;--accent3:#a8c5b0;--text-dark:#3d2f45;--text-mid:#6e5878;--text-light:#9e8faa;--border:#e8dff0;--btn-bg:#c9a7d4;--btn-text:#fff;--hero-grad:linear-gradient(135deg,#f5eef8 0%,#fce8ee 50%,#eef5f0 100%);--card-shadow:0 4px 30px rgba(140,100,160,.08);--font-head:'Playfair Display',serif;--font-body:'Cormorant Garamond',serif;--font-ui:'Jost',sans-serif;}
@@ -694,9 +695,9 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
       <div class="section-label fade-in">Track Your Order</div>
       <h2 class="section-title fade-in">Check your <em>order status</em></h2>
       <div class="divider fade-in" style="margin:0 auto 1.5rem;"></div>
-      <p class="fade-in" style="color:var(--text-mid);font-family:var(--font-body);font-size:1rem;">Enter your order number or email address to see where your order is.</p>
+      <p class="fade-in" style="color:var(--text-mid);font-family:var(--font-body);font-size:1rem;">Enter the order number from your confirmation to see where your order is.</p>
       <div class="lookup-form fade-in">
-        <input type="text" id="lookupInput" placeholder="Order # or email address"/>
+        <input type="text" id="lookupInput" placeholder="Order # (e.g. ORD-M2X7K9-4F1A2B3C)"/>
         <button class="btn btn-primary" onclick="lookupOrder()">Check Status</button>
       </div>
       <div class="lookup-result" id="lookupResult">
@@ -889,10 +890,11 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
       <!-- LOGIN -->
       <div class="adm-sec active" id="sec-login">
         <div class="login-wrap">
-          <input type="password" id="adminPwd" placeholder="Password" onkeydown="if(event.key==='Enter')checkAdmin()"/>
-          <div class="admin-err" id="adminErr">Incorrect password.</div>
-          <button class="btn btn-primary" onclick="checkAdmin()">Unlock Admin</button>
-          <p class="login-note">Default: <strong>Tosha2024</strong> — change in Settings!</p>
+          <input type="email" id="adminEmail" placeholder="Email" autocomplete="username"/>
+          <input type="password" id="adminPwd" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkAdmin()" style="margin-top:.5rem;"/>
+          <div class="admin-err" id="adminErr">Incorrect email or password.</div>
+          <button class="btn btn-primary" onclick="checkAdmin()">Sign In</button>
+          <p class="login-note"><a href="#" onclick="resetAdminPassword();return false;">Forgot password?</a></p>
         </div>
       </div>
 
@@ -1050,7 +1052,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         </div>
         <!-- INVITE CODES -->
         <div class="sec-ttl">🔑 Invite Codes</div>
-        <p style="font-family:var(--font-ui);font-size:.74rem;color:var(--text-mid);margin-bottom:.7rem;">Generate a code for someone who doesn't have an order or subscription. Each code works once.</p>
+        <p style="font-family:var(--font-ui);font-size:.74rem;color:var(--text-mid);margin-bottom:.7rem;">Give a code to someone you want to let in. Each code works once. People without a code can tap "Request to Join" and appear below.</p>
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;">
           <input type="email" id="invite-email" placeholder="Their email (optional)" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 11px;font-family:var(--font-ui);font-size:.8rem;color:var(--text-dark);outline:none;"/>
           <button class="btn btn-primary btn-sm" onclick="generateInviteCode()">Generate Code</button>
@@ -1058,6 +1060,10 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         <div id="inviteResult" style="font-family:var(--font-ui);font-size:.82rem;min-height:1.4em;"></div>
         <div class="sec-ttl" style="margin-top:1rem;">📋 Active Invite Codes</div>
         <div id="inviteList" style="font-family:var(--font-ui);font-size:.76rem;color:var(--text-mid);"></div>
+        <div class="sec-ttl" style="margin-top:1rem;">🚪 Requests to Join</div>
+        <div id="joinRequestList" style="font-family:var(--font-ui);font-size:.78rem;color:var(--text-dark);"></div>
+        <div class="sec-ttl" style="margin-top:1rem;">👥 Members</div>
+        <div id="memberList" style="font-family:var(--font-ui);font-size:.78rem;color:var(--text-dark);max-height:220px;overflow-y:auto;"></div>
 
         <!-- ACTIVITY SCHEDULER -->
         <div class="sec-ttl" style="margin-top:1.1rem;">🎯 Schedule an Activity</div>
@@ -1184,10 +1190,9 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         </div>
         <!-- PASSWORD -->
         <div class="settings-sec">
-          <div class="settings-sec-title">🔒 Change Password</div>
-          <div class="sf"><label>New Password</label><input type="password" id="s-pwd1"/></div>
-          <div class="sf"><label>Confirm</label><input type="password" id="s-pwd2"/></div>
-          <div class="pwd-err" id="pwdErr"></div>
+          <div class="settings-sec-title">🔒 Account</div>
+          <p style="font-family:var(--font-ui);font-size:.78rem;color:var(--text-mid);margin-bottom:.6rem;">Signed in securely. To change your password, we email you a reset link.</p>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><button type="button" class="btn btn-outline btn-sm" onclick="resetAdminPassword()">Email me a password reset link</button><button type="button" class="btn btn-ghost btn-sm" onclick="signOutAdmin()">Sign out</button></div>
         </div>
         <button class="btn btn-primary" style="width:100%;" onclick="saveSettings()">Save All Settings</button>
         <div class="save-note" id="saveNote">✓ Settings saved!</div>
@@ -1215,6 +1220,9 @@ let db=null;
 let rtdb=null;
 // Init Firestore first — this is critical for products, orders, everything
 try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();startListeners();}catch(e){console.error('Firestore init error:',e);}
+var ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3';
+var auth=null,adminListenersOn=false;
+try{auth=firebase.auth();auth.onAuthStateChanged(onAuthChange);}catch(e){console.error('Auth init error:',e);}
 // Init Realtime Database separately — community chat only, won't block the store if it fails
 try{rtdb=firebase.database();}catch(e){console.error('RTDB init error:',e);}
 
@@ -1240,14 +1248,13 @@ const CAT_ICONS={'Apparel':'👕','Mugs & Cups':'☕','Prints':'🖼️','Magnet
 function toArr(v){if(!v)return[];if(typeof v==='string')return v.split(',').map(x=>({label:x.trim(),adj:0})).filter(x=>x.label);if(Array.isArray(v))return v.map(x=>typeof x==='string'?{label:x,adj:0}:(x.label!==undefined?x:{label:String(x),adj:0}));return[];}
 
 // STATE
-let products=[],orders=[],subscribers=[],testimonials=[],categories=Object.keys(CAT_DEFAULTS);
-let cart=JSON.parse(localStorage.getItem('ebth-cart')||'[]');
-let adminPwd=localStorage.getItem('ebth-pwd')||'Tosha2024';
-let adminUnlocked=false,editingId=null,currentImg=null,currentFilter='all';
-let detailQty=1,detailPid=null,selectedOpts={},adjPrice=0;
-let selectedArtwork=[],pendingOrder=null,showArchived=false;
-let notifSound='chime',notifEnabled=false,lastOrderCount=0;
-let aiHistory=[];
+var products=[],orders=[],subscribers=[],testimonials=[],categories=Object.keys(CAT_DEFAULTS);
+var cart=JSON.parse(localStorage.getItem('ebth-cart')||'[]');
+var adminUnlocked=false,editingId=null,currentImg=null,currentFilter='all';
+var detailQty=1,detailPid=null,selectedOpts={},adjPrice=0;
+var selectedArtwork=[],pendingOrder=null,showArchived=false;
+var notifSound='chime',notifEnabled=false,lastOrderCount=0;
+var aiHistory=[];
 
 document.getElementById('footerYear').textContent=new Date().getFullYear();
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1});
@@ -1259,18 +1266,6 @@ function startListeners(){
     products=snap.docs.map(d=>({...d.data(),_id:d.id}));
     renderProducts();renderArtworkSelector();
     if(adminUnlocked&&document.getElementById('sec-products').classList.contains('active'))renderAdminProducts();
-  });
-  db.collection('orders').orderBy('createdAt','desc').limit(100).onSnapshot(snap=>{
-    const newOrders=snap.docs.map(d=>({...d.data(),_id:d.id}));
-    const newCount=newOrders.filter(o=>!o.archived&&o.id&&o.id.startsWith('ORD-')).length;
-    if(lastOrderCount>0&&newCount>lastOrderCount&&notifEnabled)playNotifSound(notifSound);
-    lastOrderCount=newCount;
-    orders=newOrders;
-    if(adminUnlocked&&document.getElementById('sec-kpi').classList.contains('active'))renderKPI();
-  });
-  db.collection('subscribers').onSnapshot(snap=>{
-    subscribers=snap.docs.map(d=>({...d.data(),_id:d.id}));
-    if(adminUnlocked&&document.getElementById('sec-subscribers').classList.contains('active'))renderAdminSubscribers();
   });
   db.collection('testimonials').onSnapshot(snap=>{
     testimonials=snap.docs.map(d=>({...d.data(),_id:d.id}));
@@ -1294,6 +1289,31 @@ function startListeners(){
   db.collection('settings').doc('text').onSnapshot(doc=>{
     if(doc.exists)applyEditableText(doc.data());
   });
+  // Shop settings that every customer's browser needs (payments, shipping, tax, links, watermark)
+  db.collection('settings').doc('shop').onSnapshot(doc=>{
+    if(!doc.exists)return;
+    const d=doc.data()||{};
+    Object.entries(d).forEach(([k,v])=>{if(k.startsWith('ebth-')&&v!==undefined&&v!==null)localStorage.setItem(k,String(v));});
+    try{applyLinks();}catch(e){}
+    try{renderCart();}catch(e){}
+  },err=>console.warn('shop settings:',err.message));
+}
+
+// ADMIN-ONLY LISTENERS (start after Tosha signs in; the database refuses them for anyone else)
+function startAdminListeners(){
+  if(adminListenersOn||!db)return;adminListenersOn=true;
+  db.collection('orders').orderBy('createdAt','desc').limit(100).onSnapshot(snap=>{
+    const newOrders=snap.docs.map(d=>({...d.data(),_id:d.id}));
+    const newCount=newOrders.filter(o=>!o.archived&&o.id&&o.id.startsWith('ORD-')).length;
+    if(lastOrderCount>0&&newCount>lastOrderCount&&notifEnabled)playNotifSound(notifSound);
+    lastOrderCount=newCount;
+    orders=newOrders;
+    if(adminUnlocked&&document.getElementById('sec-kpi').classList.contains('active'))renderKPI();
+  });
+  db.collection('subscribers').onSnapshot(snap=>{
+    subscribers=snap.docs.map(d=>({...d.data(),_id:d.id}));
+    if(adminUnlocked&&document.getElementById('sec-subscribers').classList.contains('active'))renderAdminSubscribers();
+  });
   // Safety alerts from community — notify Tosha discreetly
   if(rtdb){
     rtdb.ref('community/safety-alerts').limitToLast(1).on('child_added',snap=>{
@@ -1306,7 +1326,50 @@ function startListeners(){
       }
     });
   }
+  db.collection('settings').doc('private').onSnapshot(doc=>{if(doc.exists&&doc.data().gemini)localStorage.setItem('ebth-gemini-key',doc.data().gemini);},()=>{});
+  migrateShopSettings();syncOrderStatuses();
 }
+
+// AUTH
+function onAuthChange(user){
+  const isAdmin=!!(user&&user.uid===ADMIN_UID);
+  adminUnlocked=isAdmin;
+  if(isAdmin){startAdminListeners();if(document.getElementById('adminOverlay').classList.contains('open'))showAdminContent();}
+}
+async function checkAdmin(){
+  const email=(document.getElementById('adminEmail').value||'').trim();const pwd=document.getElementById('adminPwd').value;
+  const err=document.getElementById('adminErr');err.style.display='none';
+  try{const cred=await auth.signInWithEmailAndPassword(email,pwd);
+    if(cred.user.uid!==ADMIN_UID){await auth.signOut();err.textContent='This account is not the shop owner.';err.style.display='block';return;}
+    document.getElementById('adminPwd').value='';
+  }catch(e){err.textContent='Incorrect email or password.';err.style.display='block';}
+}
+async function resetAdminPassword(){
+  const email=(document.getElementById('adminEmail')?.value||auth?.currentUser?.email||'').trim();
+  if(!email){alert('Type your email in the Email box first.');return;}
+  try{await auth.sendPasswordResetEmail(email);alert('Password reset link sent to '+email+'.');}catch(e){alert('Could not send the reset email: '+e.message);}
+}
+async function signOutAdmin(){await auth.signOut();location.reload();}
+// One-time move of Tosha's settings from her browser into the shared shop settings
+const SHOP_KEYS=['ebth-cashapp','ebth-paypal','ebth-fb','ebth-pinterest','ebth-email','ebth-seo-title','ebth-seo-desc','ebth-ship-enabled','ebth-ship-base','ebth-ship-per-item','ebth-ship-free-over','ebth-tax-enabled','ebth-tax-rate','ebth-wm-enabled','ebth-wm-text','ebth-wm-pos','ebth-wm-opacity','ebth-wm-size','ebth-wm-color'];
+function shopSettingsFromLocal(){const o={};SHOP_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)o[k]=v;});return o;}
+async function migrateShopSettings(){
+  try{const doc=await db.collection('settings').doc('shop').get();
+    const local=shopSettingsFromLocal();
+    if(!doc.exists&&Object.keys(local).length)await db.collection('settings').doc('shop').set(local);
+    const g=localStorage.getItem('ebth-gemini-key');
+    if(g){const pv=await db.collection('settings').doc('private').get();if(!pv.exists||!pv.data().gemini)await db.collection('settings').doc('private').set({gemini:g},{merge:true});}
+  }catch(e){console.warn('settings migration:',e.message);}
+}
+// Public order-status cards: customers look up their order by its number only (no personal details)
+function statusCard(o){return{status:o.status||'received',date:o.date||'',itemsSummary:o.itemsSummary||'',notes:o.statusNote||''};}
+async function syncOrderStatuses(){
+  try{const snap=await db.collection('orders').get();const b=db.batch();let n=0;
+    snap.docs.forEach(d=>{const o=d.data();if(o.id){b.set(db.collection('order-status').doc(o.id),statusCard(o),{merge:true});n++;}});
+    if(n)await b.commit();
+  }catch(e){console.warn('order status sync:',e.message);}
+}
+function newOrderId(prefix){const r=Array.from(crypto.getRandomValues(new Uint8Array(4))).map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();return prefix+'-'+Date.now().toString(36).toUpperCase()+'-'+r;}
 
 // DB HELPERS
 async function dbSet(col,id,data){if(db)await db.collection(col).doc(id).set(data,{merge:true});}
@@ -1367,7 +1430,7 @@ renderProducts();
 function openProduct(id){
   const p=products.find(x=>x._id===id);if(!p)return;
   const newViews=(p.views||0)+1;p.views=newViews;
-  if(db&&p._id)db.collection('products').doc(p._id).update({views:newViews});
+  if(db&&p._id)db.collection('products').doc(p._id).update({views:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});
   renderProducts();
   detailPid=id;detailQty=1;selectedOpts={};adjPrice=0;
   (p.options||[]).forEach(opt=>{const vals=toArr(opt.vals);if(vals.length)selectedOpts[opt.name]=vals[0].label;});
@@ -1479,7 +1542,7 @@ function goToPayment(e){
   const isGift=document.getElementById('co-is-gift').checked;
   const optsSummary=cart.map(i=>{const op=Object.entries(i.opts||{}).map(([k,v])=>`${k}: ${v}`).join(', ');return i.title+(op?' ('+op+')':'')+(i.qty>1?' ×'+i.qty:'')}).join('; ');
   pendingOrder={
-    id:'ORD-'+Date.now(),date:new Date().toLocaleDateString(),
+    id:newOrderId('ORD'),date:new Date().toLocaleDateString(),
     customer:`${document.getElementById('co-first').value} ${document.getElementById('co-last').value}`,
     email:document.getElementById('co-email').value,phone:document.getElementById('co-phone').value,
     address:allDigital?'Digital Only':`${document.getElementById('co-addr').value}, ${document.getElementById('co-city').value}, ${document.getElementById('co-state').value} ${document.getElementById('co-zip').value}, ${document.getElementById('co-country').value}`,
@@ -1509,7 +1572,7 @@ async function placeOrder(method,url){
   if(!pendingOrder)return;
   pendingOrder.paymentMethod=method;
   const orderToSave={...pendingOrder,createdAt:firebase.firestore.FieldValue.serverTimestamp(),archived:false};
-  if(db)await db.collection('orders').add(orderToSave);
+  if(db){await db.collection('orders').doc(orderToSave.id).set(orderToSave);await db.collection('order-status').doc(orderToSave.id).set(statusCard(orderToSave));}
   const digitalItems=pendingOrder.items.filter(i=>i.isDigital&&i.downloadUrl);
   cart=[];saveCart();renderCart();closeModal('checkoutModal');
   document.getElementById('confirmOrderId').textContent=pendingOrder.id;
@@ -1528,14 +1591,7 @@ async function lookupOrder(){
   if(!q)return;
   let found=null;
   if(db){
-    // search by order ID
-    const byId=await db.collection('orders').where('id','==',q).limit(1).get();
-    if(!byId.empty){found={...byId.docs[0].data(),_id:byId.docs[0].id};}
-    else{
-      // search by email
-      const byEmail=await db.collection('orders').where('email','==',q).orderBy('createdAt','desc').limit(1).get();
-      if(!byEmail.empty)found={...byEmail.docs[0].data(),_id:byEmail.docs[0].id};
-    }
+    try{const d=await db.collection('order-status').doc(q.toUpperCase()).get();if(d.exists)found={...d.data(),id:q.toUpperCase()};}catch(e){}
   }
   if(!found){noneEl.style.display='block';return;}
   const st=STATUSES.find(s=>s.id===(found.status||'received'))||STATUSES[0];
@@ -1598,7 +1654,7 @@ async function handleCommission(e){
   const optWrap=document.getElementById('cm-opts-wrap');
   if(optWrap){optWrap.querySelectorAll('select').forEach(sel=>{const lbl=sel.previousElementSibling?.textContent||'Option';if(sel.value)optSelections.push(`${lbl}: ${sel.value}`);});}
   const req={
-    id:'COM-'+Date.now(),date:new Date().toLocaleDateString(),
+    id:newOrderId('COM'),date:new Date().toLocaleDateString(),
     customer:document.getElementById('cm-name').value,
     email:document.getElementById('cm-email').value,
     phone:document.getElementById('cm-phone').value||'Not provided',
@@ -1612,7 +1668,7 @@ async function handleCommission(e){
     itemsSummary:`Commission: ${document.getElementById('cm-type').value}`,
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   };
-  if(db)await db.collection('orders').add(req);
+  if(db){await db.collection('orders').doc(req.id).set(req);await db.collection('order-status').doc(req.id).set(statusCard(req));}
   document.getElementById('cmSuccess').style.display='block';
   e.target.reset();selectedArtwork=[];renderArtworkSelector();
   document.getElementById('artworkSelectedNote').textContent='';
@@ -1645,7 +1701,6 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 // ADMIN
 function openAdmin(){document.getElementById('adminOverlay').classList.add('open');if(adminUnlocked)showAdminContent();loadSettings();}
 function closeAdmin(){document.getElementById('adminOverlay').classList.remove('open');}
-function checkAdmin(){const v=document.getElementById('adminPwd').value;if(v===adminPwd){adminUnlocked=true;showAdminContent();}else{document.getElementById('adminErr').style.display='block';}}
 function showAdminContent(){document.getElementById('sec-login').classList.remove('active');document.getElementById('adminTabs').style.display='flex';document.getElementById('adminSubtitle').textContent='Welcome back, Tosha! 💜';switchTab('kpi',document.querySelector('.admin-tab'));}
 function switchTab(n,btn){
   document.querySelectorAll('.adm-sec').forEach(s=>s.classList.remove('active'));
@@ -1700,7 +1755,7 @@ function renderOrdersList(){
     </div>`;
   }).join('');
 }
-async function updateOrderStatus(fbId,status){if(db&&fbId)await db.collection('orders').doc(fbId).update({status});}
+async function updateOrderStatus(fbId,status){if(db&&fbId){await db.collection('orders').doc(fbId).update({status});const o=orders.find(x=>x._id===fbId);if(o&&o.id)await db.collection('order-status').doc(o.id).set({status},{merge:true});}}
 async function archiveOrder(fbId,archived){if(db&&fbId)await db.collection('orders').doc(fbId).update({archived});}
 
 // CATEGORIES
@@ -1899,8 +1954,6 @@ function loadSettings(){
 function updateSeoPreview(){const title=document.getElementById('s-seo-title')?.value||'Expressions by Tosha Hanvey | Healing Art';const url='nathanjhanvey.github.io/ExpressionsByTosha';const desc=document.getElementById('s-seo-desc')?.value||'Original healing art by survivor Tosha Hanvey.';document.getElementById('sp-title').textContent=title;document.getElementById('sp-url').textContent=url;document.getElementById('sp-desc').textContent=desc;}
 function renderPaymentPreview(){const ca=document.getElementById('s-cashapp')?.value||localStorage.getItem('ebth-cashapp')||'';const pp=document.getElementById('s-paypal')?.value||localStorage.getItem('ebth-paypal')||'';const el=document.getElementById('paymentPreview');if(!el)return;if(!ca&&!pp){el.innerHTML='<div class="pp-card" style="opacity:.5;">No payment methods yet.</div>';return;}el.innerHTML=(ca?`<div class="pp-card">💚 CashApp: <strong>${esc(ca.startsWith('$')?ca:'$'+ca)}</strong></div>`:'')+(pp?`<div class="pp-card">🔵 PayPal: <strong>${esc(pp)}</strong></div>`:'');}
 async function saveSettings(){
-  const p1=document.getElementById('s-pwd1').value;const p2=document.getElementById('s-pwd2').value;
-  if(p1){if(p1!==p2){document.getElementById('pwdErr').textContent='Passwords do not match.';document.getElementById('pwdErr').style.display='block';return;}document.getElementById('pwdErr').style.display='none';adminPwd=p1;localStorage.setItem('ebth-pwd',p1);document.getElementById('s-pwd1').value='';document.getElementById('s-pwd2').value='';}
   // save simple settings to localStorage
   const pairs={cashapp:'ebth-cashapp',paypal:'ebth-paypal',fb:'ebth-fb',pinterest:'ebth-pinterest',email:'ebth-email','seo-title':'ebth-seo-title','seo-desc':'ebth-seo-desc',gemini:'ebth-gemini-key'};
   Object.entries(pairs).forEach(([elKey,lsKey])=>{const el=document.getElementById('s-'+elKey);if(el&&el.value.trim())localStorage.setItem(lsKey,el.value.trim());});
@@ -1919,6 +1972,7 @@ async function saveSettings(){
   // save site links to Firebase
   const siteData={fbUrl:localStorage.getItem('ebth-fb')||'',pinterestUrl:localStorage.getItem('ebth-pinterest')||'',email:localStorage.getItem('ebth-email')||''};
   if(db)await dbSet('settings','site',siteData);
+  if(db){try{await db.collection('settings').doc('shop').set(shopSettingsFromLocal(),{merge:true});const g=document.getElementById('s-gemini')?.value.trim();if(g)await db.collection('settings').doc('private').set({gemini:g},{merge:true});}catch(e){alert('Settings could not be saved online: '+e.message);}}
   applyLinks();
   const t=localStorage.getItem('ebth-seo-title');if(t)document.getElementById('seo-title').textContent=t;
   const n=document.getElementById('saveNote');n.style.display='block';setTimeout(()=>n.style.display='none',3000);
@@ -1937,9 +1991,24 @@ applyLinks();
 })();
 
 // COMMUNITY ADMIN
-function generateInviteCode(){const email=document.getElementById('invite-email').value.trim().toLowerCase();const code=Math.random().toString(36).slice(2,8).toUpperCase();const resultEl=document.getElementById('inviteResult');if(!resultEl)return;db.collection('community-invites').doc(code).set({email:email||'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),used:false}).then(()=>{resultEl.innerHTML=`✓ Code: <strong style="color:var(--accent1);font-size:1.05rem;letter-spacing:.1em;">${code}</strong> — share this with them`;document.getElementById('invite-email').value='';loadInviteCodes();}).catch(()=>{resultEl.textContent='Error creating code.';});}
-function loadInviteCodes(){db.collection('community-invites').where('used','==',false).limit(10).get().then(snap=>{const el=document.getElementById('inviteList');if(!el)return;if(snap.empty){el.innerHTML='<div class="no-data">No active codes.</div>';return;}el.innerHTML=snap.docs.map(d=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.42rem .65rem;background:var(--bg2);border-radius:7px;border:1px solid var(--border);margin-bottom:.3rem;"><span style="font-weight:600;letter-spacing:.08em;color:var(--accent1);">${d.id}</span><span style="font-size:.66rem;color:var(--text-light);">${d.data().email||'Open'}</span><button class="icon-btn del" onclick="revokeCode('${d.id}')">×</button></div>`).join('');});}
-function revokeCode(code){if(!confirm('Revoke code '+code+'?'))return;db.collection('community-invites').doc(code).update({used:true}).then(loadInviteCodes);}
+function generateInviteCode(){const email=document.getElementById('invite-email').value.trim().toLowerCase();const code=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('')+'-'+Array.from(crypto.getRandomValues(new Uint8Array(3))).map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');const resultEl=document.getElementById('inviteResult');if(!resultEl)return;rtdb.ref('community/invites/'+code).set({email:email||'',createdAt:firebase.database.ServerValue.TIMESTAMP,used:false}).then(()=>{resultEl.innerHTML=`✓ Code: <strong style="color:var(--accent1);font-size:1.05rem;letter-spacing:.1em;">${code}</strong> — share this with them`;document.getElementById('invite-email').value='';loadInviteCodes();}).catch(e=>{resultEl.textContent='Error creating code: '+e.message;});}
+function loadInviteCodes(){
+  const el=document.getElementById('inviteList');if(!el)return;
+  rtdb.ref('community/invites').once('value').then(snap=>{const inv=snap.val()||{};const open=Object.entries(inv).filter(([c,v])=>!v.used);
+    el.innerHTML=open.length?open.map(([c,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.42rem .65rem;background:var(--bg2);border-radius:7px;border:1px solid var(--border);margin-bottom:.3rem;"><span style="font-weight:600;letter-spacing:.08em;color:var(--accent1);">${esc(c)}</span><span style="font-size:.66rem;color:var(--text-light);">${esc(v.email||'Open')}</span><button class="icon-btn del" onclick="revokeCode('${esc(c)}')">×</button></div>`).join(''):'<div class="no-data">No active codes.</div>';});
+  loadJoinRequests();loadMembers();
+}
+function loadJoinRequests(){const el=document.getElementById('joinRequestList');if(!el)return;
+  rtdb.ref('community/requests').once('value').then(snap=>{const r=snap.val()||{};const ids=Object.keys(r);
+    const emails=new Set([...orders.map(o=>(o.email||'').toLowerCase()),...subscribers.map(s=>(s.email||'').toLowerCase())]);
+    el.innerHTML=ids.length?ids.map(uid=>{const q=r[uid];const known=q.email&&emails.has(q.email.toLowerCase());return `<div style="padding:.5rem .65rem;background:var(--bg2);border-radius:7px;border:1px solid var(--border);margin-bottom:.35rem;"><div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;"><span><strong>${esc(q.nickname||'')}</strong> <span style="font-size:.66rem;color:var(--text-light);">${esc(q.email||'')}</span> ${known?'<span style="font-size:.62rem;background:var(--accent3);color:#fff;border-radius:4px;padding:1px 5px;">customer/subscriber</span>':''}</span><span style="display:flex;gap:.3rem;"><button class="btn btn-primary btn-sm" onclick="approveMember('${uid}')">Let in</button><button class="btn btn-ghost btn-sm" onclick="declineMember('${uid}')">Decline</button></span></div>${q.note?`<div style="font-size:.72rem;color:var(--text-mid);margin-top:.25rem;">“${esc(q.note)}”</div>`:''}</div>`;}).join(''):'<div class="no-data">No requests waiting.</div>';});}
+async function approveMember(uid){const q=(await rtdb.ref('community/requests/'+uid).once('value')).val()||{};await rtdb.ref().update({['community/members/'+uid]:{nickname:q.nickname||'Member',approved:true,via:'tosha',joinedAt:firebase.database.ServerValue.TIMESTAMP},['community/requests/'+uid]:null});loadInviteCodes();}
+async function declineMember(uid){if(!confirm('Decline this request?'))return;await rtdb.ref('community/requests/'+uid).remove();loadJoinRequests();}
+function loadMembers(){const el=document.getElementById('memberList');if(!el)return;
+  rtdb.ref('community/members').once('value').then(snap=>{const m=snap.val()||{};const ids=Object.keys(m).filter(u=>m[u].approved);
+    el.innerHTML=ids.length?ids.map(uid=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.38rem .65rem;border-bottom:1px solid var(--border);"><span>${esc(m[uid].nickname||'')}</span><button class="icon-btn del" title="Remove from community" onclick="removeMember('${uid}')">×</button></div>`).join(''):'<div class="no-data">No members yet.</div>';});}
+async function removeMember(uid){if(!confirm('Remove this member? They will no longer be able to enter.'))return;await rtdb.ref('community/members/'+uid).remove();loadMembers();}
+function revokeCode(code){if(!confirm('Revoke code '+code+'?'))return;rtdb.ref('community/invites/'+code+'/used').set(true).then(loadInviteCodes);}
 function fillActivityDefaults(){const type=document.getElementById('act-type')?.value||'';const defaults={'Gratitude Circle':'What is one thing, big or small, that you are grateful for today?','Affirmation Chain':'Share an affirmation that has helped you. We\'ll build on each other\'s words.','Three Good Things':'Share three good things that happened today — tiny things count.','Daily Check-In':'How are you feeling today? Use a color, an emoji, or just one word.','What Would You Tell Your Younger Self?':'What do you wish someone had told you when you were going through the hardest time?','Intention Setting':'What is one gentle intention you\'re carrying into today?'};const titleDefaults={'Gratitude Circle':'Sunday Gratitude Circle','Affirmation Chain':'Affirmation Chain','Three Good Things':'Three Good Things','Daily Check-In':'Daily Check-In','What Would You Tell Your Younger Self?':'Letter to Our Younger Selves','Intention Setting':'Morning Intentions'};const pt=document.getElementById('act-prompt');const tt=document.getElementById('act-title');if(pt)pt.value=defaults[type]||'';if(tt)tt.value=titleDefaults[type]||type;}
 async function getGeminiActivityPrompt(){const key=localStorage.getItem('ebth-gemini-key')||'';const type=document.getElementById('act-type')?.value||'';const resultEl=document.getElementById('actScheduleResult');if(!resultEl)return;if(!key){resultEl.textContent='Add your Gemini API key in Settings → AI.';return;}resultEl.textContent='🤖 Asking Gemini...';try{const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Create a warm, gentle, encouraging opening prompt for a '+type+' therapeutic community activity for trauma/abuse survivors. It should feel safe and non-pressuring. 1-2 sentences. Return only the prompt.'}]}]})});const data=await resp.json();if(data.error){resultEl.textContent='AI error: '+data.error.message;return;}const p=data.candidates?.[0]?.content?.parts?.[0]?.text||'';const el=document.getElementById('act-prompt');if(el)el.value=p.trim();resultEl.textContent='✓ Prompt ready! Edit it if you like.';}catch(e){resultEl.textContent='Error: '+e.message;}}
 async function saveScheduledActivity(){const type=document.getElementById('act-type')?.value;const title=document.getElementById('act-title')?.value.trim();const prompt=document.getElementById('act-prompt')?.value.trim();const dt=document.getElementById('act-datetime')?.value;const resultEl=document.getElementById('actScheduleResult');if(!title||!prompt){if(resultEl)resultEl.textContent='Please fill in title and prompt.';return;}await db.collection('community-activities').add({type,title,prompt,scheduledFor:dt?firebase.firestore.Timestamp.fromDate(new Date(dt)):firebase.firestore.Timestamp.now(),status:'scheduled',createdAt:firebase.firestore.FieldValue.serverTimestamp()});if(resultEl){resultEl.style.color='var(--accent3)';resultEl.textContent='✓ Activity scheduled!';setTimeout(()=>resultEl.textContent='',4000);}const ti=document.getElementById('act-title');const pr=document.getElementById('act-prompt');const dti=document.getElementById('act-datetime');if(ti)ti.value='';if(pr)pr.value='';if(dti)dti.value='';}
@@ -1981,6 +2050,12 @@ function esc(s){const d=document.createElement('div');d.textContent=s||'';return
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key==='A'){e.preventDefault();openAdmin();}});
 // URL hash: visiting #admin opens admin panel
 if(window.location.hash==='#admin')openAdmin();
+</script>
+<!-- Quick Exit: leaves fast if someone walks in -->
+<button id="quickExit" onclick="quickExit()" title="Leave this site fast (or press Esc twice)" style="position:fixed;left:14px;bottom:14px;z-index:99999;background:#b3261e;color:#fff;border:none;border-radius:999px;padding:.6rem 1rem;font:600 14px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;">✕ Quick Exit</button>
+<script>
+function quickExit(){try{document.body.style.display='none';document.title='Weather';}catch(e){}try{window.open('https://weather.com','_blank');}catch(e){}location.replace('https://www.google.com/search?q=weather');}
+(function(){var last=0;document.addEventListener('keydown',function(e){if(e.key==='Escape'){var n=Date.now();if(n-last<800)quickExit();last=n;}});})();
 </script>
 </body>
 </html>

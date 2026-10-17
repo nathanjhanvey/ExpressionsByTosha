@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 :root{--bg:#fdf8f5;--bg2:#f5eef8;--surface:#fffbfe;--accent1:#c9a7d4;--accent2:#e8b4c0;--accent3:#a8c5b0;--text-dark:#3d2f45;--text-mid:#6e5878;--text-light:#9e8faa;--border:#e8dff0;--font-head:'Playfair Display',serif;--font-ui:'Jost',sans-serif;}
 body.theme-empower{--bg:#1a0e2e;--bg2:#251540;--surface:#1f1235;--accent1:#c9a227;--accent2:#e8c76a;--accent3:#8b5cf6;--text-dark:#f5f0ff;--text-mid:#d4c5f0;--text-light:#9980cc;--border:#3d2860;}
@@ -220,34 +221,45 @@ a{color:var(--accent1);text-decoration:none;}
   <div class="join-card">
     <div class="join-logo">Expressions by Tosha Hanvey<span>Community Space</span></div>
     <div class="join-title">Welcome to our <em>community</em></div>
-    <p class="join-sub">A safe space for healing, connection, and joy. Open to members, subscribers, and invited guests.<br/><span style="font-size:.65rem;color:var(--text-light);">This community uses automated wellness monitoring to help connect members with support resources when needed. Your conversations remain private.</span></p>
-    <div class="join-tabs">
-      <div class="join-tab active" onclick="switchJoinTab('member',this)">I'm a Member</div>
-      <div class="join-tab" onclick="switchJoinTab('invite',this)">Invite Code</div>
-      <div class="join-tab" onclick="switchJoinTab('admin',this)">⚙ Admin</div>
+    <p class="join-sub">A safe space for healing, connection, and joy. Your account keeps the door locked to strangers.<br/><span style="font-size:.65rem;color:var(--text-light);">This community uses automated wellness monitoring to help connect members with support resources when needed. Your conversations remain private.</span></p>
+    <!-- STEP 1: SIGN IN / CREATE ACCOUNT -->
+    <div id="authStep">
+      <div class="join-tabs">
+        <div class="join-tab active" onclick="switchJoinTab('signin',this)">Sign In</div>
+        <div class="join-tab" onclick="switchJoinTab('signup',this)">Create Account</div>
+      </div>
+      <form class="join-form active" id="jf-signin" onsubmit="signIn(event)">
+        <div class="jf"><label>Email</label><input type="email" id="si-email" autocomplete="username" required/></div>
+        <div class="jf"><label>Password</label><input type="password" id="si-pwd" autocomplete="current-password" required/></div>
+        <button type="submit" class="btn btn-primary">Sign In →</button>
+        <a href="#" class="join-note" onclick="forgotPassword();return false;">Forgot your password?</a>
+      </form>
+      <form class="join-form" id="jf-signup" onsubmit="signUp(event)">
+        <div class="jf"><label>Nickname (what others will see)</label><input type="text" id="su-name" maxlength="24" placeholder="Not your real name, unless you want it" required/></div>
+        <div class="jf"><label>Email (private, never shown)</label><input type="email" id="su-email" autocomplete="username" required/></div>
+        <div class="jf"><label>Password (8+ characters)</label><input type="password" id="su-pwd" minlength="8" autocomplete="new-password" required/></div>
+        <button type="submit" class="btn btn-primary">Create My Account →</button>
+      </form>
+      <div style="text-align:center;margin:.9rem 0 .2rem;font-size:.66rem;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase;">or</div>
+      <button type="button" class="btn btn-ghost" style="width:100%;" onclick="googleSignIn()">Continue with Google</button>
+      <p class="join-note" style="margin-top:.6rem;">With Google, only your nickname is ever shown, never your Google name.</p>
     </div>
-    <!-- MEMBER -->
-    <form class="join-form active" id="jf-member" onsubmit="joinWithEmail(event)">
-      <div class="jf"><label>Your Email</label><input type="email" id="j-email" placeholder="the email you ordered or subscribed with" required/></div>
-      <div class="jf"><label>Your Display Name</label><input type="text" id="j-name" placeholder="What should we call you?" required maxlength="24"/></div>
-      <button type="submit" class="btn btn-primary">Enter the Community →</button>
-      <div class="join-err" id="member-err"></div>
-      <p class="join-note">Don't have an account? <a href="/ExpressionsByTosha/#newsletter">Subscribe free</a> or <a href="/ExpressionsByTosha/#shop">visit the shop</a>.</p>
-    </form>
-    <!-- INVITE -->
-    <form class="join-form" id="jf-invite" onsubmit="joinWithCode(event)">
-      <div class="jf"><label>Invite Code</label><input type="text" id="j-code" placeholder="Enter your invite code" required/></div>
-      <div class="jf"><label>Your Display Name</label><input type="text" id="j-code-name" placeholder="What should we call you?" required maxlength="24"/></div>
-      <button type="submit" class="btn btn-primary">Enter with Code →</button>
-      <div class="join-err" id="invite-err"></div>
-    </form>
-    <!-- ADMIN -->
-    <form class="join-form" id="jf-admin" onsubmit="joinAsAdmin(event)">
-      <div class="jf"><label>Admin Password</label><input type="password" id="j-admin-pwd" required/></div>
-      <div class="jf"><label>Your Display Name</label><input type="text" id="j-admin-name" value="Tosha" required maxlength="24"/></div>
-      <button type="submit" class="btn btn-primary">Enter as Admin →</button>
-      <div class="join-err" id="admin-err"></div>
-    </form>
+    <!-- STEP 2: GET IN THE DOOR -->
+    <div id="doorStep" style="display:none;">
+      <p class="join-sub" id="doorHello"></p>
+      <form class="join-form active" onsubmit="redeemInvite(event)">
+        <div class="jf"><label>Have an invite code from Tosha?</label><input type="text" id="j-code" placeholder="Invite code" autocomplete="off"/></div>
+        <button type="submit" class="btn btn-primary">Enter with Code →</button>
+      </form>
+      <div style="text-align:center;margin:.9rem 0 .5rem;font-size:.66rem;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase;">or</div>
+      <form class="join-form active" onsubmit="requestToJoin(event)">
+        <div class="jf"><label>A note for Tosha (optional)</label><input type="text" id="j-note" maxlength="200" placeholder="e.g. I bought a print, or a friend sent me"/></div>
+        <button type="submit" class="btn btn-outline">Request to Join</button>
+      </form>
+      <div class="join-note" id="requestStatus" style="margin-top:.6rem;"></div>
+      <button type="button" class="logout-btn" style="margin-top:.8rem;" onclick="logout()">Sign out</button>
+    </div>
+    <div class="join-err" id="join-err"></div>
     <div style="text-align:center;margin-top:1rem;">
       <a href="/ExpressionsByTosha/" class="back-link">← Back to the main site</a>
     </div>
@@ -379,29 +391,58 @@ const ROOMS={general:{label:'💬 General',desc:'Chat about anything'},healing:{
 const REACT_EMOJI='💜';
 
 // ═══════════════════════════════════════════
-// SESSION
+// ACCOUNTS (Firebase Authentication) + THE DOOR (invite code or Tosha's approval)
 // ═══════════════════════════════════════════
-function checkSession(){
-  const s=JSON.parse(localStorage.getItem('ebth-comm-session')||'null');
-  if(s&&s.expires>Date.now()){currentUser=s;showCommunity();}
-  else showJoin();
+const ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3';
+const auth=firebase.auth();
+function showErr(msg){const e=document.getElementById('join-err');e.textContent=msg||'';e.style.display=msg?'block':'none';}
+function friendly(e){const c=(e&&e.code)||'';return c.includes('wrong-password')||c.includes('invalid-credential')||c.includes('user-not-found')?'Email or password is not right.':c.includes('email-already-in-use')?'That email already has an account. Use Sign In.':c.includes('weak-password')?'Please use at least 8 characters.':c.includes('popup')?'The Google window was closed.':(e&&e.message)||'Something went wrong. Please try again.';}
+async function signIn(e){e.preventDefault();showErr('');try{await auth.signInWithEmailAndPassword(document.getElementById('si-email').value.trim(),document.getElementById('si-pwd').value);}catch(err){showErr(friendly(err));}}
+async function signUp(e){e.preventDefault();showErr('');const nick=document.getElementById('su-name').value.trim();
+  try{const cred=await auth.createUserWithEmailAndPassword(document.getElementById('su-email').value.trim(),document.getElementById('su-pwd').value);
+    localStorage.setItem('ebth-nick-'+cred.user.uid,nick);try{await cred.user.sendEmailVerification();}catch(_){}}catch(err){showErr(friendly(err));}}
+async function googleSignIn(){showErr('');try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(err){showErr(friendly(err));}}
+async function forgotPassword(){const em=document.getElementById('si-email').value.trim();if(!em){showErr('Type your email first, then tap "Forgot your password?"');return;}try{await auth.sendPasswordResetEmail(em);showErr('');alert('A reset link is on its way to '+em+'.');}catch(err){showErr(friendly(err));}}
+function myNick(user){return localStorage.getItem('ebth-nick-'+user.uid)||'';}
+function askNick(user){let n=myNick(user);while(!n){n=(prompt('Choose a nickname for the community (others only see this):')||'').trim().slice(0,24);if(!n)return'';}localStorage.setItem('ebth-nick-'+user.uid,n);return n;}
+auth.onAuthStateChanged(async user=>{
+  if(!user){showJoin();return;}
+  const isAdmin=user.uid===ADMIN_UID;
+  try{
+    const m=(await rtdb.ref('community/members/'+user.uid).once('value')).val();
+    if(isAdmin||(m&&m.approved)){
+      const name=(m&&m.nickname)||(isAdmin?'Tosha':myNick(user)||askNick(user));
+      currentUser={uid:user.uid,name,isAdmin,sessionId:user.uid};
+      showCommunity();return;
+    }
+    showDoor(user);
+  }catch(err){showDoor(user);}
+});
+async function showDoor(user){
+  document.getElementById('joinScreen').style.display='flex';document.getElementById('communityArea').style.display='none';
+  document.getElementById('authStep').style.display='none';document.getElementById('doorStep').style.display='block';
+  const nick=myNick(user)||askNick(user);
+  document.getElementById('doorHello').textContent='Welcome, '+nick+' 💜 One more step: enter an invite code, or ask Tosha to let you in.';
+  try{const r=(await rtdb.ref('community/requests/'+user.uid).once('value')).val();if(r)document.getElementById('requestStatus').textContent='✓ Your request was sent. Tosha will let you in soon.';}catch(_){}
 }
-function createSession(email,name,type,isAdmin=false){
-  currentUser={email,name,type,isAdmin,sessionId:'s'+Date.now()+Math.random().toString(36).slice(2),expires:Date.now()+7*24*3600*1000};
-  localStorage.setItem('ebth-comm-session',JSON.stringify(currentUser));
-}
-function logout(){
+async function redeemInvite(e){e.preventDefault();showErr('');const user=auth.currentUser;const code=document.getElementById('j-code').value.trim().toUpperCase();if(!code)return;
+  const nick=myNick(user)||askNick(user);
+  const up={};up['community/members/'+user.uid]={nickname:nick,approved:true,via:'invite',code,joinedAt:firebase.database.ServerValue.TIMESTAMP};up['community/invites/'+code+'/used']=true;
+  try{await rtdb.ref().update(up);location.reload();}catch(err){showErr('That code is not valid or was already used.');}}
+async function requestToJoin(e){e.preventDefault();showErr('');const user=auth.currentUser;const nick=myNick(user)||askNick(user);
+  try{await rtdb.ref('community/requests/'+user.uid).set({nickname:nick,email:user.email||'',note:document.getElementById('j-note').value.trim().slice(0,200),at:firebase.database.ServerValue.TIMESTAMP});
+    document.getElementById('requestStatus').textContent='✓ Request sent. Tosha will let you in soon.';}catch(err){showErr('Could not send the request: '+friendly(err));}}
+async function logout(){
   if(onlineRef)onlineRef.remove();
   Object.values(msgListeners).forEach(fn=>fn&&fn());
   if(activityListener)activityListener();
-  localStorage.removeItem('ebth-comm-session');
-  location.reload();
+  await auth.signOut();location.reload();
 }
 
 // ═══════════════════════════════════════════
 // JOIN FLOW
 // ═══════════════════════════════════════════
-function showJoin(){document.getElementById('joinScreen').style.display='flex';document.getElementById('communityArea').style.display='none';}
+function showJoin(){document.getElementById('joinScreen').style.display='flex';document.getElementById('communityArea').style.display='none';document.getElementById('authStep').style.display='block';document.getElementById('doorStep').style.display='none';}
 function showCommunity(){
   document.getElementById('joinScreen').style.display='none';
   const ca=document.getElementById('communityArea');ca.style.display='flex';
@@ -414,49 +455,8 @@ function showCommunity(){
 }
 function switchJoinTab(tab,el){
   document.querySelectorAll('.join-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  document.querySelectorAll('.join-form').forEach(f=>f.classList.remove('active'));
-  document.getElementById('jf-'+tab).classList.add('active');
-}
-async function joinWithEmail(e){
-  e.preventDefault();
-  const email=document.getElementById('j-email').value.trim().toLowerCase();
-  const name=document.getElementById('j-name').value.trim();
-  const errEl=document.getElementById('member-err');errEl.style.display='none';
-  try{
-    const [orderSnap,subSnap]=await Promise.all([
-      db.collection('orders').where('email','==',email).limit(1).get(),
-      db.collection('subscribers').where('email','==',email).limit(1).get()
-    ]);
-    if(!orderSnap.empty||!subSnap.empty){
-      createSession(email,name,'member');showCommunity();
-    } else {
-      errEl.textContent='Email not found. You need to have placed an order or subscribed to join.';errEl.style.display='block';
-    }
-  }catch(err){errEl.textContent='Connection error. Please try again.';errEl.style.display='block';}
-}
-async function joinWithCode(e){
-  e.preventDefault();
-  const code=document.getElementById('j-code').value.trim().toUpperCase();
-  const name=document.getElementById('j-code-name').value.trim();
-  const errEl=document.getElementById('invite-err');errEl.style.display='none';
-  try{
-    const inviteSnap=await db.collection('community-invites').doc(code).get();
-    if(inviteSnap.exists&&!inviteSnap.data().used){
-      await db.collection('community-invites').doc(code).update({used:true,usedBy:name,usedAt:firebase.firestore.FieldValue.serverTimestamp()});
-      createSession(inviteSnap.data().email||'guest',name,'invited');showCommunity();
-    } else {
-      errEl.textContent='Invalid or already used invite code.';errEl.style.display='block';
-    }
-  }catch(err){errEl.textContent='Connection error. Please try again.';errEl.style.display='block';}
-}
-async function joinAsAdmin(e){
-  e.preventDefault();
-  const pwd=document.getElementById('j-admin-pwd').value;
-  const name=document.getElementById('j-admin-name').value.trim();
-  const errEl=document.getElementById('admin-err');errEl.style.display='none';
-  const sitePwd=localStorage.getItem('ebth-pwd')||'Tosha2024';
-  if(pwd===sitePwd){createSession('admin@expressionsbytosha.com',name,'admin',true);showCommunity();}
-  else{errEl.textContent='Incorrect password.';errEl.style.display='block';}
+  document.querySelectorAll('#authStep .join-form').forEach(f=>f.classList.remove('active'));
+  document.getElementById('jf-'+tab).classList.add('active');showErr('');
 }
 
 // ═══════════════════════════════════════════
@@ -545,12 +545,19 @@ function sendMessage(){
   const inp=document.getElementById('chatInput');
   const text=inp.value.trim();if(!text)return;
   inp.value='';inp.style.height='38px';
-  rtdb.ref('community/messages/'+currentRoom).push({text,author:currentUser.name,authorId:currentUser.sessionId,isAdmin:currentUser.isAdmin||false,timestamp:firebase.database.ServerValue.TIMESTAMP,reactions:{}});
+  rtdb.ref('community/messages/'+currentRoom).push({text,author:currentUser.name,authorId:currentUser.uid,isAdmin:currentUser.isAdmin||false,timestamp:firebase.database.ServerValue.TIMESTAMP,reactions:{}});
   checkMessageSafety(text);
 }
 
 // SAFETY COMPANION — Gemini-powered, private to the user who sent the message
+const CRISIS_PHRASES=['kill myself','killing myself','end my life','ending my life','want to die','wanna die','suicide','suicidal','take my own life','better off dead','no reason to live','hurt myself','hurting myself','cut myself','cutting myself','self harm','self-harm','overdose','dont want to be here anymore',"don't want to be here anymore",'not want to live','going to end it','end it all','he is going to kill me','she is going to kill me','going to kill me','afraid for my life'];
+function showSafety(level){
+  const msg=document.getElementById('safetyMsg');if(msg)msg.style.display='block';
+  rtdb.ref('community/safety-alerts').push({room:currentRoom,timestamp:firebase.database.ServerValue.TIMESTAMP,level:level||'medium'}).catch(()=>{});
+}
 async function checkMessageSafety(text){
+  const t=text.toLowerCase().replace(/[’`]/g,"'");
+  if(CRISIS_PHRASES.some(p=>t.includes(p))){showSafety('high');return;}
   const key=localStorage.getItem('ebth-gemini-key')||localStorage.getItem('ebth-comm-gemini-key')||'';
   if(!key||text.length<10)return;
   try{
@@ -561,12 +568,7 @@ async function checkMessageSafety(text){
     const data=await resp.json();
     const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'{"concern":false}';
     const result=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    if(result.concern){
-      const msg=document.getElementById('safetyMsg');
-      if(msg)msg.style.display='block';
-      // Notify admin discreetly via RTDB
-      rtdb.ref('community/safety-alerts').push({room:currentRoom,timestamp:firebase.database.ServerValue.TIMESTAMP,level:result.level||'medium'});
-    }
+    if(result.concern)showSafety(result.level);
   }catch(e){/* Silent fail — never break chat */}
 }
 
@@ -815,7 +817,12 @@ function formatTime(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleT
 function formatActivityTime(ts){if(!ts)return 'TBD';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
-checkSession();
+</script>
+<!-- Quick Exit: leaves fast if someone walks in -->
+<button id="quickExit" onclick="quickExit()" title="Leave this site fast (or press Esc twice)" style="position:fixed;left:14px;bottom:14px;z-index:99999;background:#b3261e;color:#fff;border:none;border-radius:999px;padding:.6rem 1rem;font:600 14px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;">✕ Quick Exit</button>
+<script>
+function quickExit(){try{document.body.style.display='none';document.title='Weather';}catch(e){}try{window.open('https://weather.com','_blank');}catch(e){}location.replace('https://www.google.com/search?q=weather');}
+(function(){var last=0;document.addEventListener('keydown',function(e){if(e.key==='Escape'){var n=Date.now();if(n-last<800)quickExit();last=n;}});})();
 </script>
 </body>
 </html>
