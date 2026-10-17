@@ -393,7 +393,7 @@ const REACT_EMOJI='💜';
 // ═══════════════════════════════════════════
 // ACCOUNTS (Firebase Authentication) + THE DOOR (invite code or Tosha's approval)
 // ═══════════════════════════════════════════
-const ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3';
+const ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3',ADMIN_UIDS=['Ufo3WTLUeMWhjZ3k47FZmhh655A3','pp7qb0DQA1MNtCkILTynsCUTJ8u2'];
 const auth=firebase.auth();
 function showErr(msg){const e=document.getElementById('join-err');e.textContent=msg||'';e.style.display=msg?'block':'none';}
 function friendly(e){const c=(e&&e.code)||'';return c.includes('wrong-password')||c.includes('invalid-credential')||c.includes('user-not-found')?'Email or password is not right.':c.includes('email-already-in-use')?'That email already has an account. Use Sign In.':c.includes('weak-password')?'Please use at least 8 characters.':c.includes('popup')?'The Google window was closed.':(e&&e.message)||'Something went wrong. Please try again.';}
@@ -407,11 +407,11 @@ function myNick(user){return localStorage.getItem('ebth-nick-'+user.uid)||'';}
 function askNick(user){let n=myNick(user);while(!n){n=(prompt('Choose a nickname for the community (others only see this):')||'').trim().slice(0,24);if(!n)return'';}localStorage.setItem('ebth-nick-'+user.uid,n);return n;}
 auth.onAuthStateChanged(async user=>{
   if(!user){showJoin();return;}
-  const isAdmin=user.uid===ADMIN_UID;
+  const isAdmin=ADMIN_UIDS.includes(user.uid);
   try{
     const m=(await rtdb.ref('community/members/'+user.uid).once('value')).val();
     if(isAdmin||(m&&m.approved)){
-      const name=(m&&m.nickname)||(isAdmin?'Tosha':myNick(user)||askNick(user));
+      const name=(m&&m.nickname)||(isAdmin?(user.uid===ADMIN_UID?'Tosha':'Joe'):myNick(user)||askNick(user));
       currentUser={uid:user.uid,name,isAdmin,sessionId:user.uid};
       showCommunity();return;
     }

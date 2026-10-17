@@ -1220,7 +1220,7 @@ let db=null;
 let rtdb=null;
 // Init Firestore first — this is critical for products, orders, everything
 try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();startListeners();}catch(e){console.error('Firestore init error:',e);}
-var ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3';
+var ADMIN_UID='Ufo3WTLUeMWhjZ3k47FZmhh655A3',ADMIN_UIDS=['Ufo3WTLUeMWhjZ3k47FZmhh655A3','pp7qb0DQA1MNtCkILTynsCUTJ8u2'];
 var auth=null,adminListenersOn=false;
 try{auth=firebase.auth();auth.onAuthStateChanged(onAuthChange);}catch(e){console.error('Auth init error:',e);}
 // Init Realtime Database separately — community chat only, won't block the store if it fails
@@ -1332,7 +1332,7 @@ function startAdminListeners(){
 
 // AUTH
 function onAuthChange(user){
-  const isAdmin=!!(user&&user.uid===ADMIN_UID);
+  const isAdmin=!!(user&&ADMIN_UIDS.includes(user.uid));
   adminUnlocked=isAdmin;
   if(isAdmin){startAdminListeners();if(document.getElementById('adminOverlay').classList.contains('open'))showAdminContent();}
 }
@@ -1340,7 +1340,7 @@ async function checkAdmin(){
   const email=(document.getElementById('adminEmail').value||'').trim();const pwd=document.getElementById('adminPwd').value;
   const err=document.getElementById('adminErr');err.style.display='none';
   try{const cred=await auth.signInWithEmailAndPassword(email,pwd);
-    if(cred.user.uid!==ADMIN_UID){await auth.signOut();err.textContent='This account is not the shop owner.';err.style.display='block';return;}
+    if(!ADMIN_UIDS.includes(cred.user.uid)){await auth.signOut();err.textContent='This account is not a shop admin.';err.style.display='block';return;}
     document.getElementById('adminPwd').value='';
   }catch(e){err.textContent='Incorrect email or password.';err.style.display='block';}
 }
