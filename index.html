@@ -1589,12 +1589,19 @@ function goToPayment(e){
 }
 function backToInfo(){showCoPage(1);}
 window.addEventListener('load',()=>{try{const id=new URLSearchParams(location.search).get('paid');if(!id)return;history.replaceState(null,'',location.pathname);const inp=document.getElementById('lookupInput');if(inp){inp.value=id;inp.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(lookupOrder,2500);}}catch(e){}});
+function practiceEmail(){try{return sessionStorage.getItem('ebth-practice')||'';}catch(e){return'';}}
+(function(){try{const q=new URLSearchParams(location.search).get('practice');
+  if(q==='off'){sessionStorage.removeItem('ebth-practice');}else if(q&&/@/.test(q)){sessionStorage.setItem('ebth-practice',q.trim());}
+  if(q!==null)history.replaceState(null,'',location.pathname);
+  if(practiceEmail())window.addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.textContent='PRACTICE MODE: PayPal uses play money (sandbox). Close this tab to leave.';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99998;background:#f5c542;color:#222;text-align:center;font:600 13px system-ui;padding:6px';document.body.appendChild(b);});
+}catch(e){}})();
 function paypalCheckoutUrl(email,total,orderId){
+  const practice=practiceEmail();if(practice)email=practice;
   const base=location.href.split('#')[0].split('?')[0];
   const q=new URLSearchParams({cmd:'_xclick',business:email,item_name:'Expressions by Tosha order '+orderId,amount:total.toFixed(2),
     currency_code:'USD',invoice:orderId,custom:orderId,no_shipping:'1',charset:'utf-8',
     notify_url:PAY_WORKER.replace(/\/$/,'')+'/paypal/ipn',return:base+'?paid='+encodeURIComponent(orderId),cancel_return:base});
-  return 'https://www.paypal.com/cgi-bin/webscr?'+q.toString();
+  return 'https://www.'+(practice?'sandbox.':'')+'paypal.com/cgi-bin/webscr?'+q.toString();
 }
 function renderPaymentMethods(total){
   const cashapp=localStorage.getItem('ebth-cashapp')||'';
@@ -1604,7 +1611,7 @@ function renderPaymentMethods(total){
   let html='';
   if(cashapp){const tag=cashapp.startsWith('$')?cashapp:'$'+cashapp;const url=`https://cash.app/${tag.replace('$','').replace(/[^a-zA-Z0-9_-]/g,'')}/${total.toFixed(2)}`;html+=`<div class="payment-method-card" onclick="placeOrder('CashApp','${url}')"><div class="pmc-head"><span class="pmc-icon">💚</span><span class="pmc-name">Pay with CashApp</span></div><div class="pmc-desc">Fast and easy</div><div class="pmc-handle">${esc(tag)}</div></div>`;}
   const ppEmail=localStorage.getItem('ebth-paypal-email')||'';
-  if(paypal||(ppEmail&&PAY_WORKER)){let url;if(ppEmail&&PAY_WORKER&&pendingOrder){url=paypalCheckoutUrl(ppEmail,total,pendingOrder.id);}else{url=paypal.includes('paypal')?paypal:`https://paypal.me/${encodeURIComponent(paypal)}/${total.toFixed(2)}`;if(!url.startsWith('http'))url='https://'+url;}html+=`<div class="payment-method-card" onclick="placeOrder('PayPal','${url}')"><div class="pmc-head"><span class="pmc-icon">🔵</span><span class="pmc-name">Pay with PayPal</span></div><div class="pmc-desc">Secure · Credit/debit cards accepted</div><div class="pmc-handle">${esc(paypal.replace(/https?:\/\//,''))}</div></div>`;}
+  if(paypal||((ppEmail||practiceEmail())&&PAY_WORKER)){let url;if((ppEmail||practiceEmail())&&PAY_WORKER&&pendingOrder){url=paypalCheckoutUrl(ppEmail,total,pendingOrder.id);}else{url=paypal.includes('paypal')?paypal:`https://paypal.me/${encodeURIComponent(paypal)}/${total.toFixed(2)}`;if(!url.startsWith('http'))url='https://'+url;}html+=`<div class="payment-method-card" onclick="placeOrder('PayPal','${url}')"><div class="pmc-head"><span class="pmc-icon">🔵</span><span class="pmc-name">Pay with PayPal</span></div><div class="pmc-desc">Secure · Credit/debit cards accepted</div><div class="pmc-handle">${esc(paypal.replace(/https?:\/\//,''))}</div></div>`;}
   el.innerHTML=html;
 }
 async function placeOrder(method,url){
