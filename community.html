@@ -247,6 +247,25 @@ a{color:var(--accent1);text-decoration:none;}
     <!-- STEP 2: GET IN THE DOOR -->
     <div id="doorStep" style="display:none;">
       <p class="join-sub" id="doorHello"></p>
+      <div id="verifyBox" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem;font-size:.78rem;line-height:1.5;">
+        <strong>📧 Please confirm your email first.</strong><br/>We sent a link to <span id="verifyEmail"></span>. Tap it, then come back and press the button below.
+        <div style="display:flex;gap:.5rem;margin-top:.55rem;flex-wrap:wrap;"><button type="button" class="btn btn-primary btn-sm" onclick="iVerified()">I've confirmed it</button><button type="button" class="btn btn-outline btn-sm" onclick="resendVerify()">Send the link again</button></div>
+      </div>
+      <div class="jf"><label>Your community nickname</label><input type="text" id="j-nick" maxlength="24" placeholder="Others only see this" autocomplete="off"/></div>
+      <details class="rules-box" open style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.6rem .85rem;margin:.4rem 0 .6rem;font-size:.74rem;line-height:1.55;">
+        <summary style="cursor:pointer;font-weight:600;">💜 Community rules</summary>
+        <ol style="margin:.45rem 0 0 1.1rem;padding:0;">
+          <li>Be kind. No insults, bullying, slurs, or mocking anyone's story.</li>
+          <li>No threats, ever. No pressuring anyone, no asking to meet up or move to private chat.</li>
+          <li>Keep everyone safe: no phone numbers, emails, addresses, links, or social media handles. They are hidden automatically.</li>
+          <li>What's shared here stays here. Never share someone else's story or private details.</li>
+          <li>You must be 18 or older.</li>
+          <li>This is peer support, not therapy or emergency help. In a crisis, call or text <b>988</b>.</li>
+        </ol>
+        <div style="margin-top:.45rem;opacity:.85;">A moderator (with Tosha's oversight) hides messages that break the rules. Breaking them earns a strike: 1 is a warning, 2 pauses posting for 24 hours, 3 removes access. Serious violations remove access right away. Strikes expire after 90 days.</div>
+      </details>
+      <label style="display:flex;gap:.5rem;align-items:flex-start;font-size:.78rem;margin-bottom:.6rem;"><input type="checkbox" id="j-agree" style="margin-top:.2rem;"/> <span>I am 18 or older and I agree to the community rules.</span></label>
+      <div id="tsBox" style="margin:.2rem 0 .6rem;"></div>
       <form class="join-form active" onsubmit="redeemInvite(event)">
         <div class="jf"><label>Have an invite code from Tosha?</label><input type="text" id="j-code" placeholder="Invite code" autocomplete="off"/></div>
         <button type="submit" class="btn btn-primary">Enter with Code →</button>
@@ -430,8 +449,37 @@ async function signUp(e){e.preventDefault();showErr('');const nick=document.getE
     localStorage.setItem('ebth-nick-'+cred.user.uid,nick);try{await cred.user.sendEmailVerification();}catch(_){}}catch(err){showErr(friendly(err));}}
 async function googleSignIn(){showErr('');try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(err){showErr(friendly(err));}}
 async function forgotPassword(){const em=document.getElementById('si-email').value.trim();if(!em){showErr('Type your email first, then tap "Forgot your password?"');return;}try{await auth.sendPasswordResetEmail(em);showErr('');alert('A reset link is on its way to '+em+'.');}catch(err){showErr(friendly(err));}}
+const COMM_API='https://ebt-payments.nathanjhanvey.workers.dev/community/act';
+const TURNSTILE_SITEKEY=''; // filled in after the Cloudflare human check is created
+let tsWidget=null;
+async function commApi(action,payload,{refresh}={}){
+  const user=auth.currentUser;if(!user)return{ok:false,error:'Please sign in again.'};
+  try{const token=await user.getIdToken(!!refresh);
+    const r=await fetch(COMM_API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action,...payload})});
+    return await r.json();}catch(e){return{ok:false,offline:true,error:'Could not reach the community right now. Please try again.'};}
+}
+function commNotice(text,kind){
+  let el=document.getElementById('commNotice');
+  if(!el){el=document.createElement('div');el.id='commNotice';el.style.cssText='position:fixed;left:50%;bottom:84px;transform:translateX(-50%);max-width:min(92vw,520px);z-index:9999;padding:.7rem 1rem;border-radius:12px;font:500 13px/1.45 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.18);cursor:pointer';el.onclick=()=>el.style.display='none';document.body.appendChild(el);}
+  el.style.background=kind==='warn'?'#fff4e5':kind==='bad'?'#fdecea':'#f3ecf7';el.style.color='#333';el.style.border='1px solid '+(kind==='warn'?'#f0b46b':kind==='bad'?'#e5a29b':'#c9a7d4');
+  el.textContent=text;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',kind==='bad'?14000:9000);
+}
+function renderTurnstile(){
+  if(!TURNSTILE_SITEKEY||tsWidget!==null)return;
+  if(!window.turnstile){if(!document.getElementById('tsScript')){const sc=document.createElement('script');sc.id='tsScript';sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.async=true;sc.onload=renderTurnstile;document.head.appendChild(sc);}return;}
+  try{tsWidget=turnstile.render('#tsBox',{sitekey:TURNSTILE_SITEKEY,theme:'light'});}catch(e){}
+}
+function tsToken(){try{return TURNSTILE_SITEKEY&&window.turnstile?turnstile.getResponse(tsWidget)||'':'';}catch(e){return'';}}
+function tsReset(){try{if(window.turnstile&&tsWidget!==null)turnstile.reset(tsWidget);}catch(e){}}
+async function iVerified(){const u=auth.currentUser;if(!u)return;await u.reload();if(auth.currentUser.emailVerified){await u.getIdToken(true);document.getElementById('verifyBox').style.display='none';showErr('');commNotice('Thanks, your email is confirmed. 💜');}else showErr('Not confirmed yet. Please tap the link in the email (check spam too).');}
+async function resendVerify(){try{await auth.currentUser.sendEmailVerification();commNotice('A new link is on its way. 💌');}catch(e){showErr(friendly(e));}}
+function joinPayload(){
+  const nickEl=document.getElementById('j-nick');const nick=(nickEl&&nickEl.value.trim())||'';
+  if(nick)localStorage.setItem('ebth-nick-'+auth.currentUser.uid,nick);
+  return{nickname:nick,agreed:!!document.getElementById('j-agree')?.checked,turnstile:tsToken()};
+}
 function myNick(user){return localStorage.getItem('ebth-nick-'+user.uid)||'';}
-function askNick(user){let n=myNick(user);while(!n){n=(prompt('Choose a nickname for the community (others only see this):')||'').trim().slice(0,24);if(!n)return'';}localStorage.setItem('ebth-nick-'+user.uid,n);return n;}
+function askNick(user){return myNick(user);}
 auth.onAuthStateChanged(async user=>{
   if(!user){showJoin();return;}
   const isAdmin=ADMIN_UIDS.includes(user.uid);
@@ -440,7 +488,11 @@ auth.onAuthStateChanged(async user=>{
     if(isAdmin||(m&&m.approved)){
       const name=(m&&m.nickname)||(isAdmin?(user.uid===ADMIN_UID?'Tosha':'Joe'):myNick(user)||askNick(user));
       currentUser={uid:user.uid,name,isAdmin,sessionId:user.uid};
-      showCommunity();return;
+      showCommunity();
+      if(!isAdmin)rtdb.ref('community/members/'+user.uid).on('value',sn=>{const v=sn.val()||{};
+        if(v.removed||v.approved===false){commNotice('Your access to the community has been removed.','bad');setTimeout(()=>location.reload(),2500);}
+        currentUser.mutedUntil=v.mutedUntil||0;});
+      return;
     }
     showDoor(user);
   }catch(err){showDoor(user);}
@@ -448,17 +500,25 @@ auth.onAuthStateChanged(async user=>{
 async function showDoor(user){
   document.getElementById('joinScreen').style.display='flex';document.getElementById('communityArea').style.display='none';
   document.getElementById('authStep').style.display='none';document.getElementById('doorStep').style.display='block';
-  const nick=myNick(user)||askNick(user);
-  document.getElementById('doorHello').textContent='Welcome, '+nick+' 💜 One more step: enter an invite code, or ask Tosha to let you in.';
+  const nick=myNick(user);const nickEl=document.getElementById('j-nick');if(nickEl&&!nickEl.value)nickEl.value=nick;
+  document.getElementById('doorHello').textContent='Welcome'+(nick?', '+nick:'')+' 💜 One more step: read the rules, then enter an invite code or ask Tosha to let you in.';
+  const isPwd=(user.providerData||[]).some(p=>p.providerId==='password');
+  if(isPwd&&!user.emailVerified){document.getElementById('verifyBox').style.display='block';document.getElementById('verifyEmail').textContent=user.email||'your email';}
+  renderTurnstile();
+  try{const m=(await rtdb.ref('community/members/'+user.uid).once('value')).val();if(m&&m.removed){document.getElementById('doorHello').textContent='Your access to the community has been removed for breaking the community rules. If you believe this was a mistake, please contact Tosha through the main site.';document.querySelectorAll('#doorStep form, #doorStep .rules-box, #doorStep label, #j-nick, #tsBox').forEach(x=>x.style.display='none');return;}}catch(_){}
   try{const r=(await rtdb.ref('community/requests/'+user.uid).once('value')).val();if(r)document.getElementById('requestStatus').textContent='✓ Your request was sent. Tosha will let you in soon.';}catch(_){}
 }
-async function redeemInvite(e){e.preventDefault();showErr('');const user=auth.currentUser;const code=document.getElementById('j-code').value.trim().toUpperCase();if(!code)return;
-  const nick=myNick(user)||askNick(user);
-  const up={};up['community/members/'+user.uid]={nickname:nick,approved:true,via:'invite',code,joinedAt:firebase.database.ServerValue.TIMESTAMP};up['community/invites/'+code+'/used']=true;
-  try{await rtdb.ref().update(up);location.reload();}catch(err){showErr('That code is not valid or was already used.');}}
-async function requestToJoin(e){e.preventDefault();showErr('');const user=auth.currentUser;const nick=myNick(user)||askNick(user);
-  try{await rtdb.ref('community/requests/'+user.uid).set({nickname:nick,email:user.email||'',note:document.getElementById('j-note').value.trim().slice(0,200),at:firebase.database.ServerValue.TIMESTAMP});
-    document.getElementById('requestStatus').textContent='✓ Request sent. Tosha will let you in soon.';}catch(err){showErr('Could not send the request: '+friendly(err));}}
+async function redeemInvite(e){e.preventDefault();showErr('');const code=document.getElementById('j-code').value.trim().toUpperCase();if(!code){showErr('Type the invite code first.');return;}
+  const r=await commApi('join_invite',{code,...joinPayload()},{refresh:true});tsReset();
+  if(r.ok&&(r.joined||r.already)){location.reload();return;}
+  if(r.ok&&r.pendingReview){document.getElementById('requestStatus').textContent='✓ Thanks! Tosha will review your request soon.';return;}
+  if(r.needVerify)document.getElementById('verifyBox').style.display='block';
+  showErr(r.error||'Something went wrong.');}
+async function requestToJoin(e){e.preventDefault();showErr('');
+  const r=await commApi('join_request',{note:document.getElementById('j-note').value.trim().slice(0,200),...joinPayload()},{refresh:true});tsReset();
+  if(r.ok){document.getElementById('requestStatus').textContent='✓ Request sent. Tosha will let you in soon.';return;}
+  if(r.needVerify)document.getElementById('verifyBox').style.display='block';
+  showErr(r.error||'Could not send the request.');}
 async function logout(){
   if(onlineRef)onlineRef.remove();
   Object.values(msgListeners).forEach(fn=>fn&&fn());
@@ -551,6 +611,7 @@ function buildMsgEl(msg){
   const isAdmin=msg.isAdmin;
   const div=document.createElement('div');div.className='msg-row'+(isMine?' mine':'');div.dataset.id=msg.id;
   if(msg.deleted){div.innerHTML=`<div class="msg-deleted">Message removed</div>`;return div;}
+  if(msg.hidden&&!currentUser.isAdmin){div.innerHTML=`<div class="msg-deleted">${esc(msg.hiddenReason||'Removed by moderator')}</div>`;return div;}
   const init=(msg.author||'?')[0].toUpperCase();
   const reactions=msg.reactions||{};const reactCount=Object.keys(reactions).length;
   const iReacted=reactions[currentUser.sessionId];
@@ -559,45 +620,49 @@ function buildMsgEl(msg){
     ${!isMine?`<div class="msg-avatar${isAdmin?' admin-av':''}">${init}</div>`:''}
     <div class="msg-content">
       <div class="msg-meta${isMine?' mine':''}">${!isMine?`<span>${esc(msg.author)}</span>${isAdmin?'<span class="msg-admin-badge">Host</span>':''}`:''}<span>${formatTime(msg.timestamp)}</span></div>
-      <div class="msg-bubble">${esc(msg.text)}</div>
+      <div class="msg-bubble"${msg.hidden?' style="opacity:.55;outline:2px dashed #e5a29b;"':''}>${esc(msg.text)}</div>
+      ${msg.hidden?`<div style="font-size:.66rem;color:#b3261e;margin-top:.2rem;">Hidden from members: ${esc(msg.hiddenWhy||msg.hiddenReason||'')} <button class="msg-react-btn" onclick="unhideMsg('${msg.id}')">Show again</button></div>`:''}
       <div class="msg-actions${isMine?' mine':''}">
         <button class="msg-react-btn${iReacted?' reacted':''}" onclick="toggleReaction('${msg.id}')">${REACT_EMOJI}${reactCount>0?' '+reactCount:''}</button>
         ${canDelete?`<button class="msg-delete-btn" onclick="deleteMsg('${msg.id}')" title="Delete">🗑</button>`:''}
+        ${!isMine&&!isAdmin&&!currentUser.isAdmin?`<button class="msg-delete-btn" onclick="reportMsg('${msg.id}')" title="Report this message">⚑</button>`:''}
       </div>
     </div>
     ${isMine?`<div class="msg-avatar${isAdmin?' admin-av':''}">${init}</div>`:''}`;
   return div;
 }
-function sendMessage(){
+let typingStart=0,sending=false;
+document.addEventListener('keydown',e=>{if(e.target&&e.target.id==='chatInput'&&!typingStart&&e.key.length===1)typingStart=Date.now();});
+async function sendMessage(){
   const inp=document.getElementById('chatInput');
-  const text=inp.value.trim();if(!text)return;
-  inp.value='';inp.style.height='38px';
-  rtdb.ref('community/messages/'+currentRoom).push({text,author:currentUser.name,authorId:currentUser.uid,isAdmin:currentUser.isAdmin||false,timestamp:firebase.database.ServerValue.TIMESTAMP,reactions:{}});
-  checkMessageSafety(text);
+  const text=inp.value.trim();if(!text||sending)return;
+  const typedMs=typingStart?Date.now()-typingStart:0;typingStart=0;
+  if(CRISIS_PHRASES.some(p=>text.toLowerCase().replace(/[’`]/g,"'").includes(p)))showSupportNote();
+  sending=true;inp.disabled=true;
+  const r=await postToCommunity('chat',text,{room:currentRoom,typedMs});
+  sending=false;inp.disabled=false;
+  if(r.ok||r.hidden){inp.value='';inp.style.height='38px';}
+  inp.focus();
+}
+// Every post goes through the moderator (safety check, strikes, contact-info hiding, bot checks).
+async function postToCommunity(kind,text,extra={}){
+  const r=await commApi('post',{kind,text,...extra});
+  if(r.supportNote)showSupportNote();
+  if(r.removed){commNotice(r.warning||r.error||'Your access to the community has been removed.','bad');setTimeout(()=>location.reload(),4000);return r;}
+  if(r.warning)commNotice(r.warning,'warn');
+  else if(r.notice)commNotice(r.notice);
+  else if(!r.ok&&r.error)commNotice(r.error,r.muted?'warn':undefined);
+  if(r.offline&&CRISIS_PHRASES.some(p=>text.toLowerCase().includes(p)))showSafety('high');
+  return r;
 }
 
 // SAFETY COMPANION — Gemini-powered, private to the user who sent the message
 const CRISIS_PHRASES=['kill myself','killing myself','end my life','ending my life','want to die','wanna die','suicide','suicidal','take my own life','better off dead','no reason to live','hurt myself','hurting myself','cut myself','cutting myself','self harm','self-harm','overdose','dont want to be here anymore',"don't want to be here anymore",'not want to live','going to end it','end it all','he is going to kill me','she is going to kill me','going to kill me','afraid for my life'];
-function showSafety(level){
+function showSafety(level){   // used only when the moderator can't be reached
   const msg=document.getElementById('safetyMsg');if(msg)msg.style.display='block';
   rtdb.ref('community/safety-alerts').push({room:currentRoom,timestamp:firebase.database.ServerValue.TIMESTAMP,level:level||'medium'}).catch(()=>{});
 }
-async function checkMessageSafety(text){
-  const t=text.toLowerCase().replace(/[’`]/g,"'");
-  if(CRISIS_PHRASES.some(p=>t.includes(p))){showSafety('high');return;}
-  const key=localStorage.getItem('ebth-gemini-key')||localStorage.getItem('ebth-comm-gemini-key')||'';
-  if(!key||text.length<10)return;
-  try{
-    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${await geminiModel(key)}:generateContent?key=${key}`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:'You are a safety monitor for an online healing community for trauma survivors. Analyze this message ONLY for clear, explicit indicators that the person may be in immediate crisis, considering self-harm, or suicidal. Do NOT flag general expressions of sadness, struggle, healing journeys, or difficult emotions. Only flag messages with explicit crisis language. Message: "'+text.replace(/"/g,"'")+'" Respond with ONLY valid JSON: {"concern":true or false,"level":"low","medium","high"}'}]}],generationConfig:{maxOutputTokens:50}})
-    });
-    const data=await resp.json();
-    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'{"concern":false}';
-    const result=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    if(result.concern)showSafety(result.level);
-  }catch(e){/* Silent fail — never break chat */}
-}
+function showSupportNote(){const msg=document.getElementById('safetyMsg');if(msg)msg.style.display='block';}
 
 // CRISIS PANEL
 function toggleCrisisPanel(){
@@ -610,6 +675,13 @@ function toggleReaction(msgId){
   const reactions=document.querySelector('[data-id="'+msgId+'"] .msg-react-btn');
   if(reactions&&reactions.classList.contains('reacted')){ref.remove();}else{ref.set(currentUser.name);}
 }
+async function reportMsg(msgId){
+  const reason=prompt('Report this message to Tosha?\n\nWhat is wrong with it? (optional)\nFor example: threatening, creepy, bullying, spam');
+  if(reason===null)return;
+  const r=await commApi('report',{room:currentRoom,msgKey:msgId,reason:reason.slice(0,120)});
+  commNotice(r.ok?'Thank you. Tosha will take a look. 💜':(r.error||'Could not send the report.'),r.ok?undefined:'warn');
+}
+function unhideMsg(msgId){if(!currentUser.isAdmin)return;rtdb.ref('community/messages/'+currentRoom+'/'+msgId).update({hidden:false});}
 function deleteMsg(msgId){
   if(!confirm('Delete this message?'))return;
   rtdb.ref('community/messages/'+currentRoom+'/'+msgId).update({deleted:true,text:''});
@@ -667,7 +739,7 @@ function renderActiveActivity(act){
 }
 function submitActivityResponse(){
   const inp=document.getElementById('actRespInput');const text=inp.value.trim();if(!text)return;inp.value='';
-  rtdb.ref('community/activity/responses/'+currentUser.sessionId).set({text,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP});
+  postToCommunity('activity',text).then(r=>{if(!r.ok&&!r.hidden)inp.value=text;});
 }
 async function startActivity(id){
   const snap=await db.collection('community-activities').doc(id).get();
@@ -715,7 +787,7 @@ function renderWordAssoc(area,adminControls){
 }
 function postWordAssoc(){
   const inp=document.getElementById('waInput');const word=inp.value.trim();if(!word||word.includes(' ')){alert('One word only!');return;}inp.value='';
-  rtdb.ref('community/games/wordassoc').transaction(cur=>{const hist=(cur?.history||[]);hist.push(word);return{word,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP,history:hist.slice(-20)};});
+  postToCommunity('wordassoc',word);
 }
 
 // THIS OR THAT
@@ -762,8 +834,8 @@ function renderCollabStory(area,adminControls){
 }
 function addStorySentence(){
   const inp=document.getElementById('csInput');let text=inp.value.trim();if(!text)return;
-  if(!text.match(/[.!?]$/))text+='.';inp.value='';
-  rtdb.ref('community/games/story/sentences').push({text,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP});
+  inp.value='';
+  postToCommunity('story',text).then(r=>{if(!r.ok&&!r.hidden)inp.value=text;});
 }
 
 // GRATITUDE CIRCLE
@@ -785,7 +857,7 @@ function renderGratitudeCircle(area,adminControls){
 }
 function shareGratitude(){
   const inp=document.getElementById('gratInput');const text=inp.value.trim();if(!text)return;inp.value='';
-  rtdb.ref('community/games/gratitude/responses').push({text,author:currentUser.name,timestamp:firebase.database.ServerValue.TIMESTAMP});
+  postToCommunity('gratitude',text).then(r=>{if(!r.ok&&!r.hidden)inp.value=text;});
 }
 
 // ADMIN GAME CONTROLS

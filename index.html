@@ -883,7 +883,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
     <div class="admin-body">
       <!-- SAFETY ALERT BANNER -->
       <div id="safetyAlertBanner" style="display:none;background:rgba(201,167,212,.2);border:1.5px solid var(--accent1);border-radius:10px;padding:.75rem 1rem;margin-bottom:.9rem;font-family:var(--font-ui);font-size:.78rem;color:var(--text-dark);align-items:center;justify-content:space-between;gap:.7rem;">
-        <span id="safetyAlertText"></span>
+        <div style="flex:1;min-width:0;"><div id="safetyAlertText" style="font-weight:600;margin-bottom:.35rem;"></div><div id="safetyAlertList"></div></div>
         <a href="community.html" target="_blank" class="btn btn-primary btn-sm">Open Community</a>
       </div>
 
@@ -1346,14 +1346,9 @@ function startAdminListeners(){
   });
   // Safety alerts from community — notify Tosha discreetly
   if(rtdb){
-    rtdb.ref('community/safety-alerts').limitToLast(1).on('child_added',snap=>{
-      const alert=snap.val();
-      const banner=document.getElementById('safetyAlertBanner');
-      if(banner&&adminUnlocked){
-        banner.style.display='flex';
-        banner.querySelector('#safetyAlertText').textContent='💜 A community member may need support right now — check the community chat.';
-        setTimeout(()=>banner.style.display='none',30000);
-      }
+    rtdb.ref('community/safety-alerts').limitToLast(50).on('value',snap=>{
+      const all=[];snap.forEach(c=>{all.push({id:c.key,...c.val()});});
+      safetyAlerts=all.filter(a=>!a.handled).reverse();renderSafetyAlerts();
     });
   }
   db.collection('settings').doc('private').onSnapshot(doc=>{if(doc.exists&&doc.data().gemini)localStorage.setItem('ebth-gemini-key',doc.data().gemini);},()=>{});
@@ -1595,6 +1590,36 @@ function practiceEmail(){try{return sessionStorage.getItem('ebth-practice')||'';
   if(q!==null)history.replaceState(null,'',location.pathname);
   if(practiceEmail())window.addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.textContent='PRACTICE MODE: PayPal uses play money (sandbox). Close this tab to leave.';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99998;background:#f5c542;color:#222;text-align:center;font:600 13px system-ui;padding:6px';document.body.appendChild(b);});
 }catch(e){}})();
+var safetyAlerts=[];
+function renderSafetyAlerts(){
+  const banner=document.getElementById('safetyAlertBanner');if(!banner)return;
+  if(!adminUnlocked||!safetyAlerts.length){banner.style.display='none';return;}
+  const lv={crisis:['🚨','URGENT — may be in danger','#b3261e'],support:['💜','May need support','#7a4f8c'],
+    severe:['⛔','Removed: serious violation','#b3261e'],harassment:['🛡️','Message hidden (strike)','#b35c00'],threat:['⚠️','Possible threat','#b35c00'],
+    report:['⚑','Reported by a member','#8a6d00'],bot:['🤖','Possible bot paused','#555'],rejoin:['🔁','Removed person asking to rejoin','#8a6d00'],
+    high:['🚨','Crisis words','#b3261e'],medium:['💜','May need support','#7a4f8c']};
+  document.getElementById('safetyAlertText').textContent=`💜 ${safetyAlerts.length} community item${safetyAlerts.length>1?'s':''} to look at`;
+  document.getElementById('safetyAlertList').innerHTML=safetyAlerts.map(a=>{const L=lv[a.level]||['💜',a.level||'Alert','#7a4f8c'];const when=a.timestamp?new Date(a.timestamp).toLocaleString():'';
+    const who=a.kind==='report'?`${esc(a.aboutNick||'member')} (reported by ${esc(a.nickname||'member')})`:esc(a.nickname||'member');
+    const act=a.actions||{};const canUndo=act.unhide||act.restore||act.unmute||act.strike;
+    const outcome=a.outcome?` · <b>${esc(a.outcome)}</b>${a.strikeCount?` (strike ${a.strikeCount})`:''}`:'';
+    return `<div style="border-top:1px solid rgba(0,0,0,.08);padding:.45rem 0;"><b style="color:${L[2]}">${L[0]} ${esc(L[1])}</b> · ${who}${a.room?' · '+esc(a.room):''}${outcome} · <span style="opacity:.7">${esc(when)}</span>${a.reason?`<div>${esc(a.reason)}</div>`:''}${a.excerpt?`<div style="opacity:.8;font-style:italic;">“${esc(a.excerpt)}”</div>`:''}<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.3rem;"><button class="btn btn-sm" onclick="markAlertHandled('${a.id}')">✓ Handled</button>${canUndo?`<button class="btn btn-sm btn-outline" onclick="undoModeration('${a.id}')">↩ Undo moderator action</button>`:''}</div></div>`;}).join('');
+  banner.style.display='flex';
+}
+async function undoModeration(id){
+  const a=safetyAlerts.find(x=>x.id===id);if(!a)return;const act=a.actions||{};
+  if(!confirm('Undo what the moderator did here? (show the message again / give access back / lift the pause / remove the strike)'))return;
+  const up={};
+  if(act.unhide)up[`messages/${act.unhide.room}/${act.unhide.msgKey}/hidden`]=false;
+  if(act.strike)up[`members/${act.strike.uid}/strikes/${act.strike.id}`]=null;
+  const uid=act.restore||act.unmute;
+  if(uid){up[`members/${uid}/mutedUntil`]=0;up[`members/${uid}/botSuspect`]=false;}
+  if(act.restore){up[`members/${act.restore}/approved`]=true;up[`members/${act.restore}/removed`]=false;
+    try{const re=(await rtdb.ref('community/removed-emails').once('value')).val()||{};Object.keys(re).forEach(h=>{if(re[h].uid===act.restore)up[`removed-emails/${h}`]=null;});}catch(e){}}
+  up[`safety-alerts/${id}/handled`]=true;up[`safety-alerts/${id}/undone`]=true;
+  try{await rtdb.ref('community').update(up);loadMembers&&loadMembers();}catch(e){alert('Could not undo: '+e.message);}
+}
+async function markAlertHandled(id){try{await rtdb.ref('community/safety-alerts/'+id).update({handled:true,handledBy:auth.currentUser?auth.currentUser.uid:'',handledAt:Date.now()});}catch(e){alert('Could not update: '+e.message);}}
 function paypalCheckoutUrl(email,total,orderId){
   const practice=practiceEmail();if(practice)email=practice;
   const base=location.href.split('#')[0].split('?')[0];
@@ -2052,13 +2077,23 @@ function loadInviteCodes(){
 function loadJoinRequests(){const el=document.getElementById('joinRequestList');if(!el)return;
   rtdb.ref('community/requests').once('value').then(snap=>{const r=snap.val()||{};const ids=Object.keys(r);
     const emails=new Set([...orders.map(o=>(o.email||'').toLowerCase()),...subscribers.map(s=>(s.email||'').toLowerCase())]);
-    el.innerHTML=ids.length?ids.map(uid=>{const q=r[uid];const known=q.email&&emails.has(q.email.toLowerCase());return `<div style="padding:.5rem .65rem;background:var(--bg2);border-radius:7px;border:1px solid var(--border);margin-bottom:.35rem;"><div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;"><span><strong>${esc(q.nickname||'')}</strong> <span style="font-size:.66rem;color:var(--text-light);">${esc(q.email||'')}</span> ${known?'<span style="font-size:.62rem;background:var(--accent3);color:#fff;border-radius:4px;padding:1px 5px;">customer/subscriber</span>':''}</span><span style="display:flex;gap:.3rem;"><button class="btn btn-primary btn-sm" onclick="approveMember('${uid}')">Let in</button><button class="btn btn-ghost btn-sm" onclick="declineMember('${uid}')">Decline</button></span></div>${q.note?`<div style="font-size:.72rem;color:var(--text-mid);margin-top:.25rem;">“${esc(q.note)}”</div>`:''}</div>`;}).join(''):'<div class="no-data">No requests waiting.</div>';});}
-async function approveMember(uid){const q=(await rtdb.ref('community/requests/'+uid).once('value')).val()||{};await rtdb.ref().update({['community/members/'+uid]:{nickname:q.nickname||'Member',approved:true,via:'tosha',joinedAt:firebase.database.ServerValue.TIMESTAMP},['community/requests/'+uid]:null});loadInviteCodes();}
+    el.innerHTML=ids.length?ids.map(uid=>{const q=r[uid];const known=q.email&&emails.has(q.email.toLowerCase());return `<div style="padding:.5rem .65rem;background:var(--bg2);border-radius:7px;border:1px solid var(--border);margin-bottom:.35rem;"><div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;"><span><strong>${esc(q.nickname||'')}</strong> <span style="font-size:.66rem;color:var(--text-light);">${esc(q.email||'')}</span> ${q.previouslyRemoved?`<span style="font-size:.62rem;background:#b3261e;color:#fff;border-radius:4px;padding:1px 5px;" title="${esc(q.removedReason||'')}">⚠ removed before</span> `:''}${known?'<span style="font-size:.62rem;background:var(--accent3);color:#fff;border-radius:4px;padding:1px 5px;">customer/subscriber</span>':''}</span><span style="display:flex;gap:.3rem;"><button class="btn btn-primary btn-sm" onclick="approveMember('${uid}')">Let in</button><button class="btn btn-ghost btn-sm" onclick="declineMember('${uid}')">Decline</button></span></div>${q.note?`<div style="font-size:.72rem;color:var(--text-mid);margin-top:.25rem;">“${esc(q.note)}”</div>`:''}</div>`;}).join(''):'<div class="no-data">No requests waiting.</div>';});}
+async function approveMember(uid){const q=(await rtdb.ref('community/requests/'+uid).once('value')).val()||{};await rtdb.ref().update({['community/members/'+uid]:{nickname:q.nickname||'Member',approved:true,via:'tosha',joinedAt:firebase.database.ServerValue.TIMESTAMP,agreedAt:q.agreedAt||0},['community/requests/'+uid]:null});loadInviteCodes();}
 async function declineMember(uid){if(!confirm('Decline this request?'))return;await rtdb.ref('community/requests/'+uid).remove();loadJoinRequests();}
 function loadMembers(){const el=document.getElementById('memberList');if(!el)return;
-  rtdb.ref('community/members').once('value').then(snap=>{const m=snap.val()||{};const ids=Object.keys(m).filter(u=>m[u].approved);
-    el.innerHTML=ids.length?ids.map(uid=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.38rem .65rem;border-bottom:1px solid var(--border);"><span>${esc(m[uid].nickname||'')}</span><button class="icon-btn del" title="Remove from community" onclick="removeMember('${uid}')">×</button></div>`).join(''):'<div class="no-data">No members yet.</div>';});}
-async function removeMember(uid){if(!confirm('Remove this member? They will no longer be able to enter.'))return;await rtdb.ref('community/members/'+uid).remove();loadMembers();}
+  rtdb.ref('community/members').once('value').then(snap=>{const m=snap.val()||{};const now=Date.now();
+    const ids=Object.keys(m).sort((x,y)=>(m[y].removed?1:0)-(m[x].removed?1:0)||(m[x].nickname||'').localeCompare(m[y].nickname||''));
+    el.innerHTML=ids.length?ids.map(uid=>{const v=m[uid];const strikes=Object.values(v.strikes||{}).filter(s=>s.expiresAt>now);
+      const muted=v.mutedUntil&&v.mutedUntil>now;
+      const tags=[v.removed?'<span style="color:#b3261e;font-weight:600;">removed</span>':'',muted?`<span style="color:#b35c00;">paused until ${new Date(v.mutedUntil).toLocaleString()}</span>`:'',v.botSuspect?'<span>🤖 possible bot</span>':'',strikes.length?`<span title="${esc(strikes.map(s=>new Date(s.at).toLocaleDateString()+': '+(s.category||'')+' — '+(s.reason||'')).join('\n'))}">⚠ ${strikes.length} strike${strikes.length>1?'s':''}</span>`:''].filter(Boolean).join(' · ');
+      const btns=v.removed?`<button class="btn btn-sm" onclick="restoreMember('${uid}')">Give access back</button>`:
+        `${muted?`<button class="btn btn-sm" onclick="setMember('${uid}',{mutedUntil:0,botSuspect:false})">Lift pause</button>`:''}${strikes.length?`<button class="btn btn-sm" onclick="if(confirm('Clear all strikes?'))setMember('${uid}',{strikes:null})">Clear strikes</button>`:''}<button class="icon-btn del" title="Remove from community" onclick="removeMember('${uid}')">×</button>`;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.42rem .65rem;border-bottom:1px solid var(--border);${v.removed?'opacity:.6;':''}"><span><b>${esc(v.nickname||'')}</b>${tags?`<br/><span style="font-size:.66rem;">${tags}</span>`:''}</span><span style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;">${btns}</span></div>`;}).join(''):'<div class="no-data">No members yet.</div>';});}
+async function setMember(uid,data){await rtdb.ref('community/members/'+uid).update(data);loadMembers();}
+async function restoreMember(uid){if(!confirm('Give this person access back?'))return;const up={[`members/${uid}/approved`]:true,[`members/${uid}/removed`]:false,[`members/${uid}/mutedUntil`]:0,[`members/${uid}/botSuspect`]:false};
+  try{const re=(await rtdb.ref('community/removed-emails').once('value')).val()||{};Object.keys(re).forEach(h=>{if(re[h].uid===uid)up[`removed-emails/${h}`]=null;});}catch(e){}
+  await rtdb.ref('community').update(up);loadMembers();}
+async function removeMember(uid){if(!confirm('Remove this member? They will no longer be able to enter.'))return;await rtdb.ref('community/members/'+uid).update({approved:false,removed:true,removedAt:Date.now(),removedReason:'removed by admin',removedBy:auth.currentUser?auth.currentUser.uid:''});loadMembers();}
 function revokeCode(code){if(!confirm('Revoke code '+code+'?'))return;rtdb.ref('community/invites/'+code+'/used').set(true).then(loadInviteCodes);}
 function fillActivityDefaults(){const type=document.getElementById('act-type')?.value||'';const defaults={'Gratitude Circle':'What is one thing, big or small, that you are grateful for today?','Affirmation Chain':'Share an affirmation that has helped you. We\'ll build on each other\'s words.','Three Good Things':'Share three good things that happened today — tiny things count.','Daily Check-In':'How are you feeling today? Use a color, an emoji, or just one word.','What Would You Tell Your Younger Self?':'What do you wish someone had told you when you were going through the hardest time?','Intention Setting':'What is one gentle intention you\'re carrying into today?'};const titleDefaults={'Gratitude Circle':'Sunday Gratitude Circle','Affirmation Chain':'Affirmation Chain','Three Good Things':'Three Good Things','Daily Check-In':'Daily Check-In','What Would You Tell Your Younger Self?':'Letter to Our Younger Selves','Intention Setting':'Morning Intentions'};const pt=document.getElementById('act-prompt');const tt=document.getElementById('act-title');if(pt)pt.value=defaults[type]||'';if(tt)tt.value=titleDefaults[type]||type;}
 async function getGeminiActivityPrompt(){const key=localStorage.getItem('ebth-gemini-key')||'';const type=document.getElementById('act-type')?.value||'';const resultEl=document.getElementById('actScheduleResult');if(!resultEl)return;if(!key){resultEl.textContent='Add your Gemini API key in Settings → AI.';return;}resultEl.textContent='🤖 Asking Gemini...';try{const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${await geminiModel(key)}:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Create a warm, gentle, encouraging opening prompt for a '+type+' therapeutic community activity for trauma/abuse survivors. It should feel safe and non-pressuring. 1-2 sentences. Return only the prompt.'}]}]})});const data=await resp.json();if(data.error){resultEl.textContent='AI error: '+data.error.message;return;}const p=data.candidates?.[0]?.content?.parts?.[0]?.text||'';const el=document.getElementById('act-prompt');if(el)el.value=p.trim();resultEl.textContent='✓ Prompt ready! Edit it if you like.';}catch(e){resultEl.textContent='Error: '+e.message;}}
