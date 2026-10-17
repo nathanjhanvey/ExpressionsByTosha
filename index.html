@@ -551,6 +551,110 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
   .cat-kpi-grid{grid-template-columns:1fr 1fr;}
 }
+/* ================== GLASS LOOK (one removable layer) ================== */
+:root{
+  --glass-bg:linear-gradient(145deg,rgba(255,255,255,.66),rgba(255,255,255,.30));
+  --glass-edge:rgba(255,255,255,.75);
+  --glass-shade:rgba(120,80,140,.16);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 1px 0 0 rgba(255,255,255,.55),inset 0 -3px 8px rgba(120,80,140,.10),0 18px 40px -12px rgba(110,70,130,.28),0 4px 10px rgba(110,70,130,.10);
+  --raise-hi:rgba(255,255,255,.95);
+  --raise-1:#cbb7d4;--raise-2:#b9a1c5;--raise-3:#a98fb7;
+  --raise-acc-1:#b48fc2;--raise-acc-2:#a17cb0;--raise-acc-3:#8f6a9f;
+  --raise-drop:rgba(70,40,90,.28);
+}
+body.theme-empower{
+  --glass-bg:linear-gradient(145deg,rgba(60,38,100,.62),rgba(31,18,53,.42));
+  --glass-edge:rgba(255,255,255,.18);--glass-shade:rgba(0,0,0,.35);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 1px 0 0 rgba(255,255,255,.08),inset 0 -3px 8px rgba(0,0,0,.25),0 18px 40px -12px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.3);
+  --raise-hi:rgba(255,255,255,.35);--raise-1:#5b4380;--raise-2:#4a346b;--raise-3:#3a2856;
+  --raise-acc-1:#a6831d;--raise-acc-2:#8c6e17;--raise-acc-3:#715811;--raise-drop:rgba(0,0,0,.55);
+}
+body.theme-warmth{
+  --glass-shade:rgba(140,90,50,.16);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 1px 0 0 rgba(255,255,255,.55),inset 0 -3px 8px rgba(140,90,50,.10),0 18px 40px -12px rgba(130,80,40,.28),0 4px 10px rgba(130,80,40,.10);
+  --raise-1:#d9c2ae;--raise-2:#c9ae96;--raise-3:#b8997f;--raise-acc-1:#a8684a;--raise-acc-2:#93593d;--raise-acc-3:#7d4b32;--raise-drop:rgba(80,45,20,.28);
+}
+
+/* soft colour glow behind everything, so the glass has something to frost */
+body::before{content:'';position:fixed;inset:-10vmax;z-index:-1;pointer-events:none;
+  background:radial-gradient(38vmax 38vmax at 12% 18%,color-mix(in srgb,var(--accent1) 45%,transparent),transparent 70%),
+             radial-gradient(34vmax 34vmax at 88% 28%,color-mix(in srgb,var(--accent2) 40%,transparent),transparent 70%),
+             radial-gradient(40vmax 40vmax at 50% 95%,color-mix(in srgb,var(--accent3) 38%,transparent),transparent 70%),var(--bg);}
+section,.hero{background:transparent !important;}
+
+/* frosted, beveled glass panels */
+.product-card,.connect-card,.testimonial-card,.story-text,.glass-panel,.newsletter-wrap,.commission-form-card,.lookup-result,.payment-method-card,.modal-box,.crisis-panel{
+  background:var(--glass-bg) !important;border:1px solid var(--glass-edge) !important;border-radius:24px !important;
+  box-shadow:var(--glass-shadow) !important;-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);}
+.story-text{padding:2rem 2.2rem;}
+.product-card,.connect-card,.testimonial-card,.story-text,.newsletter-wrap,.commission-form-card,.lookup-result,.payment-method-card,.share-prompt{transition:transform .2s ease,box-shadow .2s ease !important;}
+.product-card:hover,.connect-card:hover,.testimonial-card:hover,.story-text:hover,.newsletter-wrap:hover,.commission-form-card:hover,.lookup-result:hover,.payment-method-card:hover,.share-prompt:hover{
+  transform:translateY(-2px);box-shadow:var(--glass-shadow),0 8px 28px color-mix(in srgb,var(--accent1) 45%,transparent) !important;}
+nav{background:var(--glass-bg) !important;-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+  border-bottom:1px solid var(--glass-edge);box-shadow:inset 0 -1px 0 rgba(255,255,255,.4),0 6px 24px -10px var(--glass-shade);}
+.hero-inner-glass{display:inline-block;padding:2.6rem 3rem 2.4rem;border-radius:32px;background:var(--glass-bg);border:1px solid var(--glass-edge);
+  box-shadow:var(--glass-shadow);-webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%);max-width:min(860px,92vw);}
+
+/* raised, thick lettering - same font */
+.hero-title,.section-title,.nav-logo{color:var(--text-dark);
+  text-shadow:-1px -1px 0 var(--raise-hi),-1px -1px 1px var(--raise-hi),1px 1px 0 var(--raise-1),2px 2px 0 var(--raise-1),3px 3px 0 var(--raise-2),4px 4px 0 var(--raise-2),5px 5px 0 var(--raise-3),6px 6px 0 var(--raise-3),7px 7px 1px var(--raise-3),9px 13px 18px var(--raise-drop);}
+.hero-title em{color:var(--accent1);
+  text-shadow:-1px -1px 0 var(--raise-hi),-1px -1px 1px var(--raise-hi),1px 1px 0 var(--raise-acc-1),2px 2px 0 var(--raise-acc-1),3px 3px 0 var(--raise-acc-2),4px 4px 0 var(--raise-acc-2),5px 5px 0 var(--raise-acc-3),6px 6px 0 var(--raise-acc-3),7px 7px 1px var(--raise-acc-3),9px 13px 18px var(--raise-drop);}
+.section-title{text-shadow:-1px -1px 0 var(--raise-hi),1px 1px 0 var(--raise-1),2px 2px 0 var(--raise-1),3px 3px 0 var(--raise-2),4px 4px 0 var(--raise-2),5px 5px 1px var(--raise-3),7px 10px 14px var(--raise-drop);}
+.section-title em{color:var(--accent1);text-shadow:-1px -1px 0 var(--raise-hi),1px 1px 0 var(--raise-acc-1),2px 2px 0 var(--raise-acc-1),3px 3px 0 var(--raise-acc-2),4px 4px 0 var(--raise-acc-2),5px 5px 1px var(--raise-acc-3),7px 10px 14px var(--raise-drop);}
+.nav-logo{text-shadow:-1px -1px 0 var(--raise-hi),1px 1px 0 var(--raise-1),2px 2px 1px var(--raise-2),3px 4px 6px var(--raise-drop);}
+.nav-logo span{text-shadow:none;}
+.testimonial-card h3,.connect-card h3,.share-prompt h3{text-shadow:-1px -1px 0 var(--raise-hi),1px 1px 0 var(--raise-1),2px 3px 5px var(--raise-drop);}
+.share-prompt h3{text-shadow:0 1px 0 rgba(255,255,255,.35),1px 2px 0 rgba(0,0,0,.12),2px 4px 8px rgba(0,0,0,.2);}
+
+/* beveled, glossy buttons */
+.btn{box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 4px rgba(0,0,0,.12),0 6px 16px -6px var(--glass-shade),0 2px 4px rgba(0,0,0,.08);}
+.btn-primary{background:linear-gradient(180deg,color-mix(in srgb,var(--btn-bg) 78%,#fff),var(--btn-bg) 55%,color-mix(in srgb,var(--btn-bg) 85%,#000));}
+.btn-outline,.btn-white,.filter-btn,.feeling-btn{background:var(--glass-bg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 4px var(--glass-shade),0 4px 10px -4px var(--glass-shade);}
+.filter-btn.active,.filter-btn:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.15),0 4px 10px -4px var(--glass-shade);}
+.share-prompt{border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -3px 8px rgba(0,0,0,.12),0 18px 40px -14px var(--glass-shade);}
+
+/* Tosha's portrait: round, beveled frame that matches the page */
+.portrait-frame{border-radius:50% !important;overflow:visible !important;padding:16px;aspect-ratio:1;
+  background:conic-gradient(from 210deg,#fff,var(--accent1),var(--accent2),#fff,var(--accent3),var(--accent1),#fff);
+  box-shadow:inset 0 2px 2px rgba(255,255,255,.9),inset 0 -3px 6px rgba(0,0,0,.18),0 24px 50px -16px var(--raise-drop),0 0 0 1px rgba(255,255,255,.6),0 0 50px -6px color-mix(in srgb,var(--accent1) 55%,transparent);}
+.portrait-frame::before{inset:-12px !important;border-radius:50% !important;border:1.5px solid var(--glass-edge) !important;opacity:1 !important;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent1) 35%,transparent);}
+.portrait-frame>img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+.portrait-frame>.portrait-placeholder{width:100%;height:100%;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface);}
+.portrait-frame::after{content:'';position:absolute;inset:16px;border-radius:50%;pointer-events:none;
+  box-shadow:inset 0 6px 14px rgba(0,0,0,.28),inset 0 -2px 6px rgba(255,255,255,.35);}
+
+/* artwork frames: a slim beveled ring in the site colours around every piece */
+.product-img,.detail-img-wrap{position:relative;padding:6px;
+  background:conic-gradient(from 210deg,#fff,var(--accent1),var(--accent2),#fff,var(--accent3),var(--accent1),#fff) !important;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.9),inset 0 -2px 4px rgba(0,0,0,.16),0 6px 14px -6px var(--raise-drop);}
+.product-img{margin:10px 10px 0;border-radius:18px;}
+.product-img img{border-radius:13px;}
+.product-img>*:not(img){border-radius:13px;background:var(--surface);width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.product-img::after,.detail-img-wrap::after{content:'';position:absolute;inset:6px;border-radius:13px;pointer-events:none;
+  box-shadow:inset 0 3px 9px rgba(0,0,0,.24),inset 0 -1px 3px rgba(255,255,255,.35);}
+.detail-img-wrap{padding:8px;margin:10px;border-radius:22px !important;}
+.detail-img-wrap img{border-radius:15px;}
+.detail-img-wrap::after{inset:8px;border-radius:15px;}
+
+/* comfort settings: devices asking for less effects get solid panels, no blur */
+@media (prefers-reduced-transparency: reduce){
+  .product-card,.connect-card,.testimonial-card,.story-text,.glass-panel,.newsletter-wrap,.commission-form-card,.lookup-result,.payment-method-card,.modal-box,.crisis-panel,nav,.hero-inner-glass,.btn-outline,.btn-white,.filter-btn,.feeling-btn{
+    -webkit-backdrop-filter:none !important;backdrop-filter:none !important;background:var(--surface) !important;}
+}
+@media (max-width:640px){
+  .hero-inner-glass{padding:1.8rem 1.3rem;border-radius:24px;}
+  .story-text{padding:1.4rem 1.3rem;}
+  .hero-title{text-shadow:-1px -1px 0 var(--raise-hi),1px 1px 0 var(--raise-1),2px 2px 0 var(--raise-1),3px 3px 0 var(--raise-2),4px 4px 0 var(--raise-3),5px 5px 1px var(--raise-3),6px 9px 12px var(--raise-drop);}
+  .hero-title em{text-shadow:-1px -1px 0 var(--raise-hi),1px 1px 0 var(--raise-acc-1),2px 2px 0 var(--raise-acc-1),3px 3px 0 var(--raise-acc-2),4px 4px 0 var(--raise-acc-3),5px 5px 1px var(--raise-acc-3),6px 9px 12px var(--raise-drop);}
+}
+/* ================== end GLASS LOOK ================== */
+
+@media (prefers-reduced-motion: reduce){
+  .product-card:hover,.connect-card:hover,.testimonial-card:hover,.story-text:hover,.newsletter-wrap:hover,.commission-form-card:hover,.lookup-result:hover,.payment-method-card:hover,.share-prompt:hover{transform:none;}
+}
 </style>
 </head>
 <body>
@@ -560,7 +664,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
 <nav>
   <div class="nav-logo">Expressions by Tosha Hanvey<span>Art With Purpose</span></div>
   <ul class="nav-links" id="navLinks">
-    <li><a href="#story">Her Story</a></li><li><a href="#shop">Shop</a></li>
+    <li><a href="#story">My Story</a></li><li><a href="#shop">Shop</a></li>
     <li><a href="#testimonials">Reviews</a></li><li><a href="#commission">Custom Order</a></li>
     <li><a href="#orderlookup">Track Order</a></li>
     <li><a href="#connect">Connect</a></li><li><a href="#contact">Contact</a></li>
@@ -573,13 +677,15 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-inner-glass">
   <div class="hero-eyebrow" id="txt-eyebrow">Art With Purpose · Healing Through Color</div>
   <h1 class="hero-title">Expressions<br/><em>by Tosha Hanvey</em></h1>
   <p class="hero-sub" id="txt-herosub">Where healing meets canvas</p>
   <p class="hero-tagline" id="txt-herotagline">Original art created to bring calm, affirmation, and hope to those who need it most. Every piece carries a story. Every color carries intention.</p>
   <div class="hero-actions">
     <a href="#shop" class="btn btn-primary">Shop the Collection</a>
-    <a href="#story" class="btn btn-outline">Her Story</a>
+    <a href="#story" class="btn btn-outline">My Story</a>
+  </div>
   </div>
   <div class="hero-scroll">Scroll</div>
 </section>
@@ -589,12 +695,12 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
   <div class="section-inner">
     <div class="story-grid">
       <div class="story-text fade-in">
-        <div class="section-label">Her Story</div>
+        <div class="section-label">My Story</div>
         <h2 class="section-title">Art born from <em>survival</em></h2>
         <div class="divider"></div>
-        <p id="txt-story1">Tosha Hanvey is a survivor. Her journey through abuse, recovery, and healing is the foundation of every brushstroke she makes. Art became her language when words weren't enough.</p>
+        <p id="txt-story1">I am a survivor. My journey through abuse, recovery, and healing is the foundation of every brushstroke I make. Art became my language when words weren't enough.</p>
         <blockquote id="txt-storyquote">"When I paint, I paint for the person who feels exactly how I used to feel. You are not alone."</blockquote>
-        <p id="txt-story2">Tosha has shared her story at events for fellow survivors, speaking with raw honesty and the courage that only comes from having truly walked through fire. Each piece is created to meet you exactly where you are, and remind you that you are enough.</p>
+        <p id="txt-story2">I have shared my story at events for fellow survivors, speaking with raw honesty and the courage that only comes from having truly walked through fire. Each piece I create is made to meet you exactly where you are, and remind you that you are enough.</p>
       </div>
       <div class="story-portrait fade-in">
         <div class="portrait-frame" id="portraitFrame">
@@ -611,7 +717,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
     <div class="section-label fade-in">The Collection</div>
     <h2 class="section-title fade-in">Find your <em>piece</em></h2>
     <div class="divider fade-in"></div>
-    <p class="fade-in" style="color:var(--text-mid);max-width:490px;margin-bottom:1.6rem;" id="txt-shopintro">Each item is crafted by Tosha with care and intention. Browse, find what speaks to you, and carry the message with you.</p>
+    <p class="fade-in" style="color:var(--text-mid);max-width:490px;margin-bottom:1.6rem;" id="txt-shopintro">I craft each item with care and intention. Browse, find what speaks to you, and carry the message with you.</p>
     <div class="filter-bar fade-in" id="filterBar"></div>
     <div class="feeling-bar fade-in" id="feelingBar">
       <span class="feeling-bar-label">💜 Shop by Feeling:</span>
@@ -634,7 +740,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
     <h2 class="section-title fade-in">Words that <em>matter</em></h2>
     <div class="divider fade-in"></div>
     <div class="testimonials-grid" id="testimonialsGrid"></div>
-    <div class="share-prompt fade-in"><div><h3 id="txt-shareprompt">Has Tosha's art meant something to you?</h3><p>Your words could be exactly what someone else needs to hear today.</p></div><a href="#contact" class="btn btn-white">Share Your Story</a></div>
+    <div class="share-prompt fade-in"><div><h3 id="txt-shareprompt">Has my art meant something to you?</h3><p>Your words could be exactly what someone else needs to hear today.</p></div><a href="#contact" class="btn btn-white">Share Your Story</a></div>
   </div>
 </section>
 
@@ -644,10 +750,10 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
     <div class="newsletter-wrap fade-in">
       <div style="font-size:2.5rem;margin-bottom:.9rem;">💌</div>
       <h2>Stay close to the <em>art</em></h2>
-      <p id="txt-newsletterbody">New pieces, stories behind the work, and quiet encouragement — delivered to your inbox. No pressure, no spam. Just Tosha and a little hope.</p>
+      <p id="txt-newsletterbody">New pieces, stories behind the work, and quiet encouragement — delivered to your inbox. No pressure, no spam. Just me and a little hope.</p>
       <form class="nl-form" onsubmit="handleNewsletter(event)"><input type="email" id="nlEmail" placeholder="your@email.com" required/><button type="submit" class="btn btn-primary">Subscribe</button></form>
       <p class="nl-note">We respect your privacy. Unsubscribe anytime.</p>
-      <p class="nl-success" id="nlSuccess">💜 You're in! Watch for a message from Tosha soon.</p>
+      <p class="nl-success" id="nlSuccess">💜 You're in! Watch for a message from me soon.</p>
     </div>
   </div>
 </section>
@@ -660,9 +766,9 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         <div class="section-label">Custom Orders</div>
         <h2 class="section-title">A piece made <em>just for you</em></h2>
         <div class="divider"></div>
-        <p id="txt-commissionintro">Tosha creates custom pieces for people who want something truly personal — a gift for someone who needs encouragement, a specific affirmation, or a piece designed for your space.</p>
+        <p id="txt-commissionintro">I create custom pieces for people who want something truly personal — a gift for someone who needs encouragement, a specific affirmation, or a piece designed for your space.</p>
         <ul id="commissionCatList"></ul>
-        <p style="margin-top:.95rem;font-size:.86rem;color:var(--text-light);font-style:italic;">All commissions are handled personally by Tosha.</p>
+        <p style="margin-top:.95rem;font-size:.86rem;color:var(--text-light);font-style:italic;">I handle every commission personally.</p>
       </div>
       <div class="fade-in">
         <div class="commission-form-card">
@@ -677,10 +783,10 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
               <div class="artwork-grid" id="artworkSelectorGrid"></div>
               <div class="artwork-selected-note" id="artworkSelectedNote"></div>
             </div>
-            <div class="ff"><label>Tell Tosha what you have in mind</label><textarea id="cm-desc" placeholder="Colors, words, feelings, who it's for, what it means..." style="min-height:95px;resize:vertical;" required></textarea></div>
+            <div class="ff"><label>Tell me what you have in mind</label><textarea id="cm-desc" placeholder="Colors, words, feelings, who it's for, what it means..." style="min-height:95px;resize:vertical;" required></textarea></div>
             <div class="ff"><label>Budget range (optional)</label><select id="cm-budget"><option value="">No preference</option><option>Under $50</option><option>$50 – $100</option><option>$100 – $200</option><option>$200+</option></select></div>
             <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.45rem;">Send Commission Request 🎨</button>
-            <p id="cmSuccess" style="display:none;color:var(--accent3);font-family:var(--font-ui);font-size:.78rem;margin-top:.55rem;">💜 Received! Tosha will reach out to you soon.</p>
+            <p id="cmSuccess" style="display:none;color:var(--accent3);font-family:var(--font-ui);font-size:.78rem;margin-top:.55rem;">💜 Received! I'll reach out to you soon.</p>
           </form>
         </div>
       </div>
@@ -706,7 +812,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         <div class="lr-items" id="lrItems"></div>
         <div class="lr-note" id="lrNote"></div>
       </div>
-      <div class="lookup-none" id="lookupNone">No order found with that information. Please check and try again, or <a href="#contact">contact Tosha directly</a>.</div>
+      <div class="lookup-none" id="lookupNone">No order found with that information. Please check and try again, or <a href="#contact">contact me directly</a>.</div>
     </div>
   </div>
 </section>
@@ -720,9 +826,9 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
     <div class="connect-grid">
       <div class="connect-card fade-in"><div class="icon">🏘</div><h3>Community</h3><p>Join our healing community space — chat, games, and therapeutic activities with fellow members.</p><a href="community.html" class="btn btn-primary">Join Community</a></div>
       <div class="connect-card fade-in"><div class="icon">💙</div><h3>Facebook</h3><p>Follow for new releases and a community that truly gets it.</p><a href="#" id="fbLink" class="btn btn-primary" target="_blank">Follow on Facebook</a></div>
-      <div class="connect-card fade-in"><div class="icon">📌</div><h3>Pinterest</h3><p>Browse Tosha's art boards and find inspiration.</p><a href="#" id="pinterestLink" class="btn btn-outline" target="_blank">View on Pinterest</a></div>
+      <div class="connect-card fade-in"><div class="icon">📌</div><h3>Pinterest</h3><p>Browse my art boards and find inspiration.</p><a href="#" id="pinterestLink" class="btn btn-outline" target="_blank">View on Pinterest</a></div>
       <div class="connect-card fade-in"><div class="icon">💌</div><h3>Newsletter</h3><p>New art and encouragement in your inbox. Just warmth.</p><a href="#newsletter" class="btn btn-outline">Subscribe Free</a></div>
-      <div class="connect-card fade-in"><div class="icon">✉️</div><h3>Share Your Story</h3><p>Has Tosha's art meant something to you?</p><a href="#contact" class="btn btn-outline">Send a Message</a></div>
+      <div class="connect-card fade-in"><div class="icon">✉️</div><h3>Share Your Story</h3><p>Has my art meant something to you?</p><a href="#contact" class="btn btn-outline">Send a Message</a></div>
     </div>
   </div>
 </section>
@@ -735,7 +841,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         <div class="section-label">Contact</div>
         <h2 class="section-title">Let's <em>talk</em></h2>
         <div class="divider"></div>
-        <p id="txt-contactintro">Questions about an order, a custom piece, or just want to say hello — Tosha would love to hear from you.</p>
+        <p id="txt-contactintro">Questions about an order, a custom piece, or just want to say hello — I would love to hear from you.</p>
         <div class="ci-row"><span>📧</span><a id="contactEmailLink" href="#">your@email.com</a></div>
         <div class="ci-row"><span>📘</span><a href="#" id="fbContactLink">Facebook Page</a></div>
       </div>
@@ -816,7 +922,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
           <div class="ff"><label>Recipient's Name</label><input type="text" id="co-gift-name"/></div>
           <div class="ff"><label>Gift Shipping Address</label><input type="text" id="co-gift-addr"/></div>
           <div class="form-row"><div class="ff"><label>City</label><input type="text" id="co-gift-city"/></div><div class="ff"><label>State / ZIP</label><input type="text" id="co-gift-state-zip"/></div></div>
-          <div class="ff"><label>Gift Message (Tosha will handwrite this)</label><textarea id="co-gift-msg" style="min-height:60px;resize:vertical;"></textarea></div>
+          <div class="ff"><label>Gift Message (I'll handwrite this)</label><textarea id="co-gift-msg" style="min-height:60px;resize:vertical;"></textarea></div>
         </div>
         <form id="co-form-1" onsubmit="goToPayment(event)">
           <div class="form-row"><div class="ff"><label>First Name</label><input type="text" id="co-first" required/></div><div class="ff"><label>Last Name</label><input type="text" id="co-last" required/></div></div>
@@ -839,7 +945,7 @@ input[type=range]{width:100%;accent-color:var(--accent1);cursor:pointer;margin-t
         <div class="order-summary" id="paymentSummary"></div>
         <div style="font-family:var(--font-ui);font-size:.76rem;color:var(--text-mid);margin-bottom:.9rem;font-weight:500;">Choose how to pay:</div>
         <div id="paymentMethods"></div>
-        <div class="payment-note-manual">After paying, Tosha will see your order and get it ready. Questions? <a href="#contact">Contact her here.</a></div>
+        <div class="payment-note-manual">After you pay, I'll see your order and get it ready. Questions? <a href="#contact">Contact me here.</a></div>
         <button class="btn btn-ghost btn-sm" style="margin-top:.85rem;" onclick="backToInfo()">← Back</button>
       </div>
     </div>
@@ -1352,7 +1458,7 @@ function startAdminListeners(){
     });
   }
   db.collection('settings').doc('private').onSnapshot(doc=>{if(doc.exists&&doc.data().gemini)localStorage.setItem('ebth-gemini-key',doc.data().gemini);},()=>{});
-  migrateShopSettings();syncOrderStatuses();
+  migrateShopSettings();syncOrderStatuses();migrateTextVoice();
 }
 
 // AUTH
@@ -1414,13 +1520,18 @@ const TEXT_DEFAULTS={
   herosub:'Where healing meets canvas',
   herotagline:'Original art created to bring calm, affirmation, and hope to those who need it most. Every piece carries a story. Every color carries intention.',
   storyquote:'"When I paint, I paint for the person who feels exactly how I used to feel. You are not alone."',
-  story1:'Tosha Hanvey is a survivor. Her journey through abuse, recovery, and healing is the foundation of every brushstroke she makes. Art became her language when words weren\'t enough.',
-  story2:'Tosha has shared her story at events for fellow survivors, speaking with raw honesty and the courage that only comes from having truly walked through fire. Each piece is created to meet you exactly where you are, and remind you that you are enough.',
-  shopintro:'Each item is crafted by Tosha with care and intention. Browse, find what speaks to you, and carry the message with you.',
-  commissionintro:'Tosha creates custom pieces for people who want something truly personal — a gift for someone who needs encouragement, a specific affirmation, or a piece designed for your space.',
-  contactintro:'Questions about an order, a custom piece, or just want to say hello — Tosha would love to hear from you.'
+  story1:'I am a survivor. My journey through abuse, recovery, and healing is the foundation of every brushstroke I make. Art became my language when words weren\'t enough.',
+  story2:'I have shared my story at events for fellow survivors, speaking with raw honesty and the courage that only comes from having truly walked through fire. Each piece I create is made to meet you exactly where you are, and remind you that you are enough.',
+  shopintro:'I craft each item with care and intention. Browse, find what speaks to you, and carry the message with you.',
+  commissionintro:'I create custom pieces for people who want something truly personal — a gift for someone who needs encouragement, a specific affirmation, or a piece designed for your space.',
+  contactintro:'Questions about an order, a custom piece, or just want to say hello — I would love to hear from you.'
 };
-function applyEditableText(d){
+const TEXT_OLD3RD={"story1": "Tosha Hanvey is a survivor. Her journey through abuse, recovery, and healing is the foundation of every brushstroke she makes. Art became her language when words weren't enough.", "story2": "Tosha has shared her story at events for fellow survivors, speaking with raw honesty and the courage that only comes from having truly walked through fire. Each piece is created to meet you exactly where you are, and remind you that you are enough.", "shopintro": "Each item is crafted by Tosha with care and intention. Browse, find what speaks to you, and carry the message with you.", "commissionintro": "Tosha creates custom pieces for people who want something truly personal — a gift for someone who needs encouragement, a specific affirmation, or a piece designed for your space.", "contactintro": "Questions about an order, a custom piece, or just want to say hello — Tosha would love to hear from you."};
+function firstPerson(d){const o={...d};Object.keys(TEXT_OLD3RD).forEach(k=>{if(o[k]&&o[k].trim()===TEXT_OLD3RD[k])o[k]=TEXT_DEFAULTS[k];});return o;}
+async function migrateTextVoice(){try{const doc=await db.collection('settings').doc('text').get();if(!doc.exists)return;const d=doc.data(),fix={};
+  Object.keys(TEXT_OLD3RD).forEach(k=>{if(d[k]&&d[k].trim()===TEXT_OLD3RD[k])fix[k]=TEXT_DEFAULTS[k];});
+  if(Object.keys(fix).length)await db.collection('settings').doc('text').set(fix,{merge:true});}catch(e){console.warn('text voice update:',e.message);}}
+function applyEditableText(d){d=firstPerson(d||{});
   const map={eyebrow:'txt-eyebrow',herosub:'txt-herosub',herotagline:'txt-herotagline',storyquote:'txt-storyquote',story1:'txt-story1',story2:'txt-story2',shopintro:'txt-shopintro',commissionintro:'txt-commissionintro',contactintro:'txt-contactintro'};
   Object.entries(map).forEach(([key,elId])=>{const el=document.getElementById(elId);if(el&&d[key])el.textContent=d[key];});
 }
@@ -1477,7 +1588,7 @@ function openProduct(id){
       ${p.isDigital?'<div class="digital-info-badge">📥 Instant Digital Download</div>':''}
       <div class="detail-price" id="detailPriceDisplay">$${(parseFloat(p.price)+adjPrice).toFixed(2)}</div>
       <div class="detail-price-note" id="detailPriceNote">${adjPrice!==0?'Base $'+parseFloat(p.price).toFixed(2)+' + options':''}</div>
-      <div class="detail-desc">${esc(p.desc||'A beautiful piece crafted with intention and care by Tosha.')}</div>
+      <div class="detail-desc">${esc(p.desc||'A beautiful piece I crafted with intention and care.')}</div>
       ${p.fromTosha?`<div class="from-tosha-section"><div class="from-tosha-label">💜 From Tosha's Heart</div><div class="from-tosha-text">${esc(p.fromTosha)}</div></div>`:''}
       <div class="detail-views">👁 ${newViews} ${newViews===1?'person has':'people have'} viewed this piece</div>
       ${optsHtml}
@@ -1632,7 +1743,7 @@ function renderPaymentMethods(total){
   const cashapp=localStorage.getItem('ebth-cashapp')||'';
   const paypal=localStorage.getItem('ebth-paypal')||'';
   const el=document.getElementById('paymentMethods');
-  if(!cashapp&&!paypal){el.innerHTML=`<div style="background:var(--bg2);border-radius:10px;padding:1rem;font-family:var(--font-ui);font-size:.78rem;color:var(--text-mid);text-align:center;">No payment methods set yet. Tosha will contact you.</div><button class="btn btn-primary" style="width:100%;margin-top:.75rem;" onclick="placeOrder('Manual','')">Place Order — Tosha will contact you</button>`;return;}
+  if(!cashapp&&!paypal){el.innerHTML=`<div style="background:var(--bg2);border-radius:10px;padding:1rem;font-family:var(--font-ui);font-size:.78rem;color:var(--text-mid);text-align:center;">No payment methods set yet. I'll contact you.</div><button class="btn btn-primary" style="width:100%;margin-top:.75rem;" onclick="placeOrder('Manual','')">Place Order — I'll contact you</button>`;return;}
   let html='';
   if(cashapp){const tag=cashapp.startsWith('$')?cashapp:'$'+cashapp;const url=`https://cash.app/${tag.replace('$','').replace(/[^a-zA-Z0-9_-]/g,'')}/${total.toFixed(2)}`;html+=`<div class="payment-method-card" onclick="placeOrder('CashApp','${url}')"><div class="pmc-head"><span class="pmc-icon">💚</span><span class="pmc-name">Pay with CashApp</span></div><div class="pmc-desc">Fast and easy</div><div class="pmc-handle">${esc(tag)}</div></div>`;}
   const ppEmail=localStorage.getItem('ebth-paypal-email')||'';
@@ -1647,7 +1758,7 @@ async function placeOrder(method,url){
   const hasDigitalItems=pendingOrder.items.some(i=>i.isDigital);
   cart=[];saveCart();renderCart();closeModal('checkoutModal');
   document.getElementById('confirmOrderId').textContent=pendingOrder.id;
-  document.getElementById('confirmMsg').textContent=method==='Manual'?'Tosha will contact you to arrange payment and prepare your order. You\'re amazing. 💜':`Your payment is being processed via ${method}. Once confirmed, Tosha will prepare your order. You\'re amazing. 💜`;
+  document.getElementById('confirmMsg').textContent=method==='Manual'?'I\'ll contact you to arrange payment and prepare your order. You\'re amazing. 💜':`Your payment is being processed via ${method}. Once confirmed, I\'ll prepare your order. You\'re amazing. 💜`;
   document.getElementById('confirmDownloads').innerHTML=hasDigitalItems?`<div class="download-section"><h4>📥 Your Downloads</h4><p>Your download links appear as soon as payment is confirmed. Save your order number <b>${esc(pendingOrder.id)}</b> and look it up under <b>Track Your Order</b>.</p></div>`:'';
   openModal('confirmModal');
   if(url&&method!=='Manual')setTimeout(()=>window.open(url,'_blank'),600);
